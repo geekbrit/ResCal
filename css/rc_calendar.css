@@ -1,0 +1,115 @@
+.clearfix:after {
+  content: ".";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0; }
+
+.clearfix {
+  display: inline-block; }
+
+.rc_event {
+  width: 99%;
+  max-width: 118px;
+  height: 66px;
+  border: 1px solid #888888;
+  font-family: metrophobic,arial; }
+  .rc_event .rc_event_head {
+    width: 100%;
+    font-size: 80%;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.1); }
+  .rc_event .rc_event_body {
+    font-size: 80%;
+    text-align: center; }
+  .rc_event .rc_event_prepad {
+    background: rgba(0, 0, 0, 0.3);
+    width: 100%; }
+  .rc_event .rc_event_postpad {
+    background: rgba(0, 0, 0, 0.3);
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0; }
+  .rc_event #sgrip {
+    width: 20px;
+    height: 10px;
+    border: 1px solid #888888;
+    border-top: none;
+    -webkit-border-bottom-right-radius: 6px;
+    -webkit-border-bottom-left-radius: 6px;
+    -moz-border-radius-bottomright: 6px;
+    -moz-border-radius-bottomleft: 6px;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    text-align: center;
+    position: absolute;
+    bottom: -11px;
+    left: 40px;
+    font-size: 50%; }
+
+.rc_week {
+  font-family: metrophobic,arial;
+  width: 645px;
+  margin: 8px auto; }
+  .rc_week .rc_event {
+    position: absolute; }
+
+.rc_headerweek {
+  width: 645px;
+  background: #dfc; }
+  .rc_headerweek .rc_name {
+    float: left;
+    padding-left: 8px; }
+  .rc_headerweek .rc_location {
+    float: right;
+    padding-right: 8px; }
+
+.col_5dayweek {
+  float: left;
+  width: 118px;
+  border: 1px solid #cccccc;
+  border-left: none;
+  overflow: hidden;
+  position: relative; }
+
+.col_7dayweek {
+  float: left;
+  width: col_7days_width;
+  border: 1px solid #cccccc;
+  overflow: hidden;
+  position: relative; }
+
+.rc_gutter {
+  float: left;
+  width: 48px;
+  border: 1px solid #cccccc; }
+
+.rc_hour_slot {
+  height: 71px;
+  border-bottom: 1px solid #cccccc; }
+
+.rc_quarters_slot {
+  height: 17px;
+  width: 100%;
+  border-bottom: 1px dotted #cccccc; }
+
+.rc_quarters_slot:nth-child(even) {
+  border-bottom: 1px solid #cccccc; }
+
+.rc_thirds_slot {
+  height: 23px;
+  width: 100%;
+  border-bottom: 1px dotted #cccccc; }
+
+.rc_thirds_slot:nth-child(3n-3) {
+  border-bottom: 1px solid #cccccc; }
+
+.rc_halves_slot {
+  height: 35px;
+  width: 100%;
+  border-bottom: 1px dotted #cccccc; }
+
+.rc_quarters_slot:nth-child(even) {
+  border-bottom: 1px solid #cccccc; }

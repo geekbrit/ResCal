@@ -1,0 +1,41 @@
+.calendar {
+	margin-left:180px;
+}
+
+.event_palette {
+    position: fixed;
+	top: 10px;
+	left: 10px;
+}
+
+.ip_spacing{ margin:4px; }
+
+.in_palette {
+	-webkit-box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.2);
+	box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.2);
+}
+
+.event {
+	background: rgba(255,255,255,0.6);
+	display: table;
+ 	p {
+		display: table-cell;
+		text-align:center;
+		vertical-align:middle;
+	}
+}
+
+.client { 
+	border-color:#A66;
+	color:#A66;
+}
+
+.vendor {
+	border-color:#6A6;
+	color:#6A6;
+}
+
+.internal {
+	border-color:#66A;
+	color:#66A;
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Resource Calendar Test</title>
+	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="css/jquery.pnotify.default.css">
+	<link rel="stylesheet" type="text/css" href="css/pform.css">
+	<link rel="stylesheet" type="text/css" href="css/rc_calendar.css">
+	<link rel="stylesheet" type="text/css" href="css/test.css">
+</head>
+<body>
+	<div class='event_palette'>
+		<div class='ip_spacing'><div class='rc_event client event in_palette' data-evtype='client'   ><p>Client Meeting</p></div></div>
+		<div class='ip_spacing'><div class='rc_event internal event in_palette' data-evtype='internal' ><p>Internal Meeting</p></div></div>
+		<div class='ip_spacing'><div class='rc_event vendor event in_palette' data-evtype='vendor'   ><p>Vendor Meeting</p></div></div>
+	</div>
+
+	<!-- This is a container class that will hold a calendar for each of the resources defined within it -->
+	<div class='calendar'>
+	    <!-- Declare resources, set up validation function and parameters-->
+		<resource id='Room1' data-validate='validateEvent' data-params='{"capacity":["LE",30], "campus":["EQ","N"]}'></resource>
+		<resource id='Room2' data-validate='validateEvent' data-params='{"capacity":["LE",50], "campus":["EQ","N"]}'></resource>
+		<resource id='Room3' data-validate='validateEvent' data-params='{"capacity":["LE",120],"campus":["EQ","E"]}'></resource>
+	</div>
+
+	<!-- This form is displayed by Pine Notify when editing Event details -->
+	<div id="form_event_edit" style="display: none;">
+		<form class="pf-form pform_custom" action="" method="post">
+			<div class="pf-element pf-heading">
+				<h3>Resource Calendar</h3>
+				<p>Edit event details here.</p>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Meeting Title</span>
+					<input class="pf-field" type="text" name="meeting_title" id="ev_text" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Notes</span>
+					<input class="pf-field" type="text" name="meeting_notes" id="notes" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Number of Attendees</span>
+					<input class="pf-field" type="text" name="meeting_capacity" id="capacity" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Campus</span>
+					<input class="pf-field" type="text" name="meeting_caampus" id="campus" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Day</span>
+					<input class="pf-field" type="text" name="meeting_day" id="date" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Start</span>
+					<input class="pf-field" type="text" name="meeting_start" id="start" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Duration</span>
+					<input class="pf-field" type="text" name="meeting_duration" id="duration" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Preparation Time</span>
+					<input class="pf-field" type="text" name="meeting_prep" id="prep_time" />
+				</label>
+			</div>
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Cleanup Time</span>
+					<input class="pf-field" type="text" name="meeting_clean" id="cleanup_time" />
+				</label>
+			</div>
+
+			<div class="pf-element pf-buttons pf-centered">
+				<input class="pf-button btn btn-primary" type="submit" name="submit" value="Submit" />
+			</div>
+		</form>
+	</div>
+
+	<script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script>
+	<script src="js/jquery.pnotify.js" type="text/javascript"></script>
+	<script src="js/moment.min.js" type="text/javascript"></script>
+	<script src="templates/week.template.js" type="text/javascript"></script>
+	<script src="js/rc_calendar.js" type="text/javascript"></script>
+	<script src="js/rc_utilities.js" type="text/javascript"></script>
+<script type="text/javascript">
+		//
+		//  Example function to verify that a resource can accept an event dropped onto it
+		//
+		function validateEvent( event, params )
+		{
+			for( var p in params ) {
+				if( p in event ) {
+					switch( params[p][0] )
+					{
+						case 'EQ' : if( event[p] != params[p][1] ) return p; break;
+						case 'NE' : if( event[p] == params[p][1] ) return p; break;
+						case 'LT' : if( event[p] >= params[p][1] ) return p; break;
+						case 'LE' : if( event[p] >  params[p][1] ) return p; break;
+						case 'GT' : if( event[p] <= params[p][1] ) return p; break;
+						case 'GE' : if( event[p] <  params[p][1] ) return p; break;
+
+						// "IN" & "NI" would be used for testing whether a value is in a list or not
+						case 'IN' : if( -1 == params[p][1].indexOf(event[p]) ) return p; break;
+						case 'NI' : if( -1 != params[p][1].indexOf(event[p]) ) return p; break;
+					}
+				}
+			}
+			return false;
+		}
+
+
+		$(document).ready(function() {
+			$('.calendar').rc_calendar();
+			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
+		});
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<div class='rc_week'>
+  <div class="rc_headerweek"><div class="rc_gutter">TZ?</div>
+  {{ for(var i = 0; i < it.col_count; i++ ) { }}
+    <div class="{{=it.col_class}}">{{=it.days[i]}}</div>
+  {{ } }}
+  <div class="rc_bodyweek">
+  <div class="rc_gutter">Times</div>
+  {{ for(var i = 0; i < it.col_count; i++ ) { }}
+    <div class="{{=it.col_class}}">Appointment slots</div>
+  {{ } }}
+  </div>
+</div>
