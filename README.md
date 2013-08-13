@@ -33,7 +33,7 @@ it shall be eliminated.
 Examples of customizability include:
 * Rendering of calendars and events is carried out by doT javascript template functions. These can be found
 in the templates directory; the raw doT template code is shown in comments. These are compiled into js functions using the
-cut and paste compiler on http://olado.github.io/doT/.
+cut and paste compiler on http://olado.github.io/doT/. UPDATE: These are now compiled on the fly when the page is loaded
 * The functions used to render the calendars and events are defined in the rc_calendar default settings at the
 top of rc_calendar.js, but can be overridden by options passed into the rc_calendar constructor
 * The resources associated with the calendar are defined in <resource> tags in the html code (see test.html). I'm not
