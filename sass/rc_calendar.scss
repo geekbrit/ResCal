@@ -98,8 +98,9 @@ $col_7days_width : 595/7 - 1px;
 
 .col_7dayweek {
 	float:left;
-	width:col_7days_width;
+	width:$col_7days_width;
 	border:1px solid #ccc;
+	border-left:none;
 	overflow:hidden;
 	position:relative;
 }

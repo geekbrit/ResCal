@@ -6,6 +6,7 @@
 
     var defaults = {
         // view-specific settings
+        startdate       : new moment().valueOf(),
         render          : 'view_week',
         render_event    : 'view_week_render_event',
         get_time_offset : function( evt, ui ){return ui.offset.top - evt.target.offsetTop;},
@@ -60,7 +61,7 @@
             var element = $(_element);
             var calendar = new Calendar( element, options );
             element.data('rc_Calendar', calendar);
-            calendar.render(1375293414903);
+            calendar.render( options.startdate );
             calendar.initialize_events();
         });
 
@@ -157,7 +158,7 @@ function Calendar( element, options )
                         t.resources[resource_id],
                         {
                             start    : start_time,
-                            date     : date,
+                            date     : date.valueOf(),
                             duration : t.options.default_duration,
                             ev_type  : dragged.attr('data-evtype'),
                             ev_text  : dragged.text(),
@@ -343,6 +344,17 @@ function Calendar( element, options )
         }
 
         t.element.append( render_week( params ) );
+
+        // show all known events for this resource
+        for(var i = 0; i < params.col_count; i++ ) {
+            var todays_events = resource.listEvents(params.dates[i]);
+
+            if( undefined != todays_events ){
+                for( var j in todays_events) {
+                    t[t.options.render_event]( todays_events[j] );
+                }
+            }
+        }
     }
 
 }
@@ -393,7 +405,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
     for( var i in t.Events ) {
         var evt = t.Events[i];
         if( undefined != resources[evt.attr.resource] ) {
-            resources[evt.attr.resource].addEvent( evt );
+            resources[evt.attr.resource].addEvent( evt, 'no_confirm' );
             render( evt );
         }
         else {
@@ -428,7 +440,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
         var stash = evt.attr;
 
         evt.attr.start   = options.start;
-        evt.attr.date    = options.date;      
+        evt.attr.date    = options.date.valueOf;      
         evt.attr.t_offset= options.t_offset;
 
 
@@ -495,7 +507,7 @@ function Resource( resource_element, init_mode ) {
     //  To optimize searching and drawing times, events are grouped
     //  by date (each event has 'midnight' at the start of the day encoded within it)
     //
-    t.eventpool = [];
+    t.eventpool = {};
 
     t.id = resource_element.attr('id');
 
@@ -504,7 +516,6 @@ function Resource( resource_element, init_mode ) {
     {
         case 'localtest': {
             t.attr = init_resource[t.id];
-            //t.eventpool = init_resource_events[t.id];
             break;
         }
 
@@ -533,11 +544,14 @@ function Resource( resource_element, init_mode ) {
     //      "Reasons" are application specific and are registered as callbacks read from the
     //      resource declaration
     //
+    //      no_confirm parameter allows known events to be populated on page load without
+    //          causing "success" notifications to be generated
+    //
     //  returns
     //      true : could add the event
     //      false: unable to add the event
     //
-    t.addEvent = function( event ){
+    t.addEvent = function( event, no_confirm ){
         if( reason = t.attr.validateFn( event.attr, t.attr.validateParams ) ) {
             rc_notify('Unable to add the event','The '+reason+' requirement was not met', 'error');
             return false;
@@ -554,23 +568,29 @@ function Resource( resource_element, init_mode ) {
 
             t.eventpool[event.attr.date][event.attr.id] = event;
             
-            var formatted_date = new moment( event.attr.date ).format("dddd, Do MMM YYYY");
-
-            rc_notify('Success',
-                    'Added '+event.attr.ev_text+' to '+t.attr.title+' at '+event.attr.start+' on '+formatted_date,
-                    'success');
+            if( undefined == no_confirm ){
+                var formatted_date = new moment( event.attr.date ).format("dddd, Do MMM YYYY");
+    
+                rc_notify('Success',
+                        'Added '+event.attr.ev_text+' to '+t.attr.title+' at '+event.attr.start+' on '+formatted_date,
+                        'success');
+            }
         }
         return true;
     }
 
-    t.removeEvent = function( event ){
-        t.eventpool[event.attr.date][event.attr.id] = undefined;
+    t.removeEvent = function( evt ){
+        t.eventpool[evt.attr.date][evt.attr.id] = undefined;
+    }
+
+    t.listEvents = function( date ){
+        return t.eventpool[date];
     }
 
     //t.findCollisions = function( event )
 
     return t;
-}
+    }
 
 }(jQuery))
 

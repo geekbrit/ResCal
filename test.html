@@ -158,11 +158,25 @@
 		}
 
 
+		//
+		// This function is needed as a callback when the user clicks on a new
+		//	date using a datepicker dialog. The callback mechanism doesn't let
+		//	us conveniently patch through to the current calendar without exposing
+		//  a lot of internals to the template system.
+		//
+		//	We can revisit this at a later date.
+		//
+		function dateSelect( date, selector )
+		{
+			$('.calendar').empty();
+			$('.calendar').rc_calendar( 'render', moment(date).valueOf() );
+		}
+
 		$(document).ready(function() {
 			$('.calendar').rc_calendar({
-				persist:  saveEvent,
-				retrieve: loadEvents,
-				remove:   removeEvent 
+				persist 	: saveEvent,
+				retrieve 	: loadEvents,
+				remove  	: removeEvent,
 			});
 			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
 		});

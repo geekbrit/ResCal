@@ -76,8 +76,9 @@
 
 .col_7dayweek {
   float: left;
-  width: col_7days_width;
+  width: 84px;
   border: 1px solid #cccccc;
+  border-left: none;
   overflow: hidden;
   position: relative; }
 

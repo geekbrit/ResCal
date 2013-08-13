@@ -15,7 +15,9 @@ var render_week = doT.template((function(){/*
   <span class='rc_name'>{{=it.resource_name}}</span>
   <span class='rc_location'>{{=it.resource_location}}</span>
   </div>
-  <div class="rc_headerweek"><div class="rc_gutter">&nbsp;</div>
+  <div class="rc_headerweek"><div class="rc_gutter" style='relative'>
+    <img src='img/CalendarIcon.gif' alt='click here to change date range' class='calimg'/>
+  </div>
   {{ for(var i = 0; i < it.col_count; i++ ) { }}
     <div class="{{=it.col_class}}">{{=it.dows[i]+' '+it.months[i]+'/'+it.days[i]}}</div>
   {{ } }}
@@ -52,6 +54,7 @@ var render_week = doT.template((function(){/*
   {{ } }}
   </div>
 </div>
+{{ $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) }); }}
 */}).heredoc());
 
 

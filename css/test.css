@@ -41,3 +41,8 @@
   text-align: center;
   padding: 1px 3px;
   margin: 2px; }
+
+.calimg {
+  height: 1em;
+  width: auto;
+  margin-left: 14px; }
