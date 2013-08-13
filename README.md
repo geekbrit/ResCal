@@ -6,7 +6,12 @@ resource associated with a calendar, time slots arranged vertically). At this po
 * Drag one of the predefined meeting types onto any of the resource calendars
 * Drag meetings within and between resources
 * Click on meetings to open an event-editing box
-* drag the bottom edge of a meeting to change its overall duration
+* Drag the bottom edge of a meeting to change its overall duration
+* Delete an event by clicking on the 'X' in the top-right corner of the event
+
+The test/demo system uses localStorage to provide event persistence. In a real implementation, this would be
+replaced by, or enhanced with server-side storage using Ajax transactions.
+
 
 ## Objective
 To create an alternative to the FullCalendar jquery plugin. Improvements over FullCalendar include:
