@@ -209,3 +209,35 @@ function convert_to_time( t, ampm )
     return hours + ':' + mins;
 }
 
+
+//
+// Unfortunately, Pines Notify does not have a "confirm" function, which would be nice for consistency
+//  Using a jquery ui dialog, code lifted/adapted from here:
+//       http://www.vrusso.com.br/blog/2011/03/unobtrusive-confirm-javascript-replacement-with-jquery-ui-dialog/
+//
+function confirm(message, callback, param) {
+    $('body').append('<div id="confirm" style="display:none">'+message+'</div>'); // dont forget to hide this!
+    $( "#confirm" ).dialog({
+        resizable: false,
+        title: 'Please Confirm',
+        modal: true,
+        buttons: [
+            {
+                text: "Yes",
+                click: function() {
+                    $(this).dialog("close");
+                    if ($.isFunction(callback)) {   
+                        callback( param );
+                    }
+                
+                }
+            },{
+                text: "No",
+                click: function() { $(this).dialog("close");}
+            }
+        ],
+        close: function(event, ui) { 
+            $('#confirm').remove();
+        }
+    });
+}

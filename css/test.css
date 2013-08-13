@@ -32,3 +32,12 @@
 .internal {
   border-color: #66A;
   color: #66A; }
+
+.deleteevent {
+  float: right;
+  font-size: 50%;
+  color: #A00;
+  border: 1px solid #aa0000;
+  text-align: center;
+  padding: 1px 3px;
+  margin: 2px; }

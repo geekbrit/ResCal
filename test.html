@@ -125,9 +125,45 @@
 			return false;
 		}
 
+		//
+		// Example functions for making events persistent
+		//		This example uses HTML5 localstorage; a 'real' system would be
+		//		Ajaxed. Even better... Ajax + localstorage with localstorage change
+		//		listeners to allow offline working and sync-on-connect.
+		//
+		function saveEvent( evt )
+		{
+			localStorage.setItem( evt.attr.id, JSON.stringify(evt) );
+		}
+
+		function loadEvents( )
+		{
+			// this function should be written as a generator.. when yield is universally available
+			var records = {};
+
+			for( var i=0; i<=localStorage.length-1; i++ )
+    		{
+	  			var key = localStorage.key(i);
+	  			var val = JSON.parse(localStorage.getItem(key));
+
+	  			records[key] = val ;
+	  		}
+
+	  		return records;
+		}
+
+		function removeEvent( id )
+		{
+			localStorage.removeItem( id );
+		}
+
 
 		$(document).ready(function() {
-			$('.calendar').rc_calendar();
+			$('.calendar').rc_calendar({
+				persist:  saveEvent,
+				retrieve: loadEvents,
+				remove:   removeEvent 
+			});
 			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
 		});
 

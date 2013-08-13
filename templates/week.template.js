@@ -3,6 +3,9 @@
     return this.toString().replace(/.*\/\*\n([\s\S]*)\n\*\/.*/m, "$1");
 };
 
+
+// [TODO] Add support for per-day opening/closing times 
+
 //
 //  Template for a calendar for a single resource
 //
@@ -64,7 +67,7 @@ var render_week_event = doT.template((function(){/*
      style="top:{{=it.attr.t_offset}}px;height:{{=it.attr.t_height}}px;"
      id="{{=it.attr.id}}">
   <div class="rc_event_prepad" style="height:{{=it.attr.t_prepad}}px;"></div>
-  <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}</div>
+  <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}<div class='deleteevent'>X</div></div>
   <div class="rc_event_body">{{=it.attr.ev_text}}</div>
   <div class="rc_event_postpad" style="height:{{=it.attr.t_postpad}}px;"></div>
 </div>

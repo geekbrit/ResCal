@@ -8,7 +8,13 @@
         // view-specific settings
         render          : 'view_week',
         render_event    : 'view_week_render_event',
-        get_time_offset : function( event, ui ){return ui.offset.top - event.target.offsetTop;},
+        get_time_offset : function( evt, ui ){return ui.offset.top - evt.target.offsetTop;},
+
+        // persistent event storage accessor functions
+        // (override with application functions in rc_calendar constructor call)
+        persist         : function( evt ){},
+        retrieve        : function(){ return [] },
+        remove          : function(){},
 
         min_time        : '07:00',   // 7am
         max_time        : '20:00',   // 8pm
@@ -55,6 +61,7 @@
             var calendar = new Calendar( element, options );
             element.data('rc_Calendar', calendar);
             calendar.render(1375293414903);
+            calendar.initialize_events();
         });
 
         return this;
@@ -107,7 +114,13 @@ function Calendar( element, options )
         t.resources[$(this).attr('id')] = new Resource($(this),'localtest');
     });
 
-    t.eventmanager = new rc_EventManager();
+    t.initialize_events = function(){
+        t.eventmanager = new rc_EventManager( t.options.retrieve,
+                                              t.options.persist,
+                                              t.options.remove,
+                                              t.resources,
+                                              t[t.options.render_event] );
+    }    
 
 
 //--- Public Methods ---
@@ -151,8 +164,7 @@ function Calendar( element, options )
 
                             // [TODO - abstract user-added attributes]
                             capacity : 10
-                        },
-                        t[t.options.render_event]
+                        }
                     );
                 }
                 else
@@ -168,8 +180,7 @@ function Calendar( element, options )
                             {
                                 start    : start_time,
                                 date     : date,
-                            },
-                            t[t.options.render_event]
+                            }
                         ) ) {
                         // was able to render in the new position, delete the original
                         dragged.remove();
@@ -215,6 +226,12 @@ function Calendar( element, options )
         var newev = $(eventdiv);
 
         $('#'+evt.attr.parent).append( newev );
+
+        newev.find('.deleteevent').click(function(event){
+            event.stopPropagation();
+            confirm( "You are about to delete this event; this action can not be undone! Confirm deletion?",
+                     t.eventmanager.deleteEvent, evt.attr.id );
+        });
 
         newev.draggable({
             appendTo : 'body',
@@ -363,13 +380,29 @@ function rc_Event( options )
 //      Manages updates to/from the server
 //
 
-function rc_EventManager( )
+function rc_EventManager( retrieve_events, save_event, delete_event, resources, display )
 {
-    var to_write = [];
+    var render      = display;
+    var persistEvent= save_event;
+    var killEvent   = delete_event;
+    var to_write    = [];      // [NOTE] - this may disappear, it is for async writes to a server
     var t = this;
-    t.Events = [];
 
-    t.createEvent = function( parent, resource, options, render ) {
+    t.Events = retrieve_events();
+
+    for( var i in t.Events ) {
+        var evt = t.Events[i];
+        if( undefined != resources[evt.attr.resource] ) {
+            resources[evt.attr.resource].addEvent( evt );
+            render( evt );
+        }
+        else {
+            // [TODO] - remove from list??
+        }
+
+    }
+
+    t.createEvent = function( parent, resource, options ) {
         var new_event = new rc_Event( options );
         var id = new_event.attr.id;
 
@@ -380,12 +413,13 @@ function rc_EventManager( )
             new_event.attr.resource = resource.id;
             new_event.attr.parent   = parent.attr('id');  // div in which this event currently resides
             render( new_event );
+            persistEvent( new_event );
         }
 
         return new_event;
     }
 
-    t.moveEvent = function( evt, parent, old_resource, new_resource, options, render) {
+    t.moveEvent = function( evt, parent, old_resource, new_resource, options ) {
         to_write[evt.attr.id] = true;
 
         // have to update event attributes before attempting to move the event,
@@ -410,12 +444,19 @@ function rc_EventManager( )
             evt.attr.resource = new_resource.id;
             evt.attr.parent   = parent.attr('id');
             render( evt );
+            persistEvent( evt );
             return true;
         }
         else {
             evt.attr = stash;
             return false;
         }
+    }
+
+    t.deleteEvent = function( id ){
+        t.Events[ id ] = undefined;
+        $('#'+id).remove();
+        killEvent( id );
     }
 
     return t;
@@ -443,11 +484,7 @@ var init_resource = {
     Room2:{title:"Narwhal",capacity:50,location:"Rochester North"},
     Room3:{title:"Walrus",capacity:500,location:"Rochester East"},
 };
-var init_resource_events = {
-    Room1:[0,1,2,3],
-    Room2:[4,5,6,7],
-    Room3:[8,9,10,11]
-}
+
 //--- END TEST DATA ---------------------------------------------------
 
 
