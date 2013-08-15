@@ -18,9 +18,25 @@
 	<!-- This is a container class that will hold a calendar for each of the resources defined within it -->
 	<div class='calendar'>
 	    <!-- Declare resources, set up validation function and parameters-->
-		<resource id='Room1' data-validate='validateEvent' data-params='{"capacity":["LE",30], "campus":["EQ","N"]}'></resource>
-		<resource id='Room2' data-validate='validateEvent' data-params='{"capacity":["LE",50], "campus":["EQ","N"]}'></resource>
-		<resource id='Room3' data-validate='validateEvent' data-params='{"capacity":["LE",120],"campus":["EQ","E"]}'></resource>
+		<resource id='Room1'
+				  data-validate	='validateEvent'
+				  data-params  	='{"capacity":["LE",30], "campus":["EQ","N"]}'
+				  data-attr    	='{"title":"Orca","capacity":250,"location":"Rochester North"}';
+				  >
+		</resource>
+		<resource id='Room2'
+				  data-validate	='validateEvent'
+				  data-params	='{"capacity":["LE",50], "campus":["EQ","N"]}'
+				  data-attr		='{"title":"Narwhal","capacity":50,"location":"Rochester North"}'
+				  >
+		</resource>
+		<resource id='Room3'
+				  data-validate	='validateEvent'
+				  data-params	='{"capacity":["LE",120], "campus":["EQ","E"]}'
+				  data-attr		='{"title":"Walrus","capacity":500,"location":"Rochester East"}'
+				  >
+		</resource>
+
 	</div>
 
 	<!-- This form is displayed by Pine Notify when editing Event details -->
@@ -56,35 +72,29 @@
 			</div>
 			<div class="pf-element">
 				<label>
-					<span class="pf-label">Day</span>
-					<input class="pf-field" type="text" name="meeting_day" id="date" />
-				</label>
-			</div>
-			<div class="pf-element">
-				<label>
-					<span class="pf-label">Start</span>
-					<input class="pf-field" type="text" name="meeting_start" id="start" />
-				</label>
-			</div>
-			<div class="pf-element">
-				<label>
-					<span class="pf-label">Duration</span>
+					<span class="pf-label">Duration (minutes)</span>
 					<input class="pf-field" type="text" name="meeting_duration" id="duration" />
 				</label>
 			</div>
 			<div class="pf-element">
 				<label>
-					<span class="pf-label">Preparation Time</span>
+					<span class="pf-label">Preparation Time (minutes)</span>
 					<input class="pf-field" type="text" name="meeting_prep" id="prep_time" />
 				</label>
 			</div>
 			<div class="pf-element">
 				<label>
-					<span class="pf-label">Cleanup Time</span>
+					<span class="pf-label">Cleanup Time (minutes)</span>
 					<input class="pf-field" type="text" name="meeting_clean" id="cleanup_time" />
 				</label>
 			</div>
-
+			<div class="pf-element">
+				<label>
+					<span class="pf-label">Lock Meeting</span>
+					<span class="pf-label">Locked meetings can not be dragged or resized</span>
+					<input class="pf-field" type="checkbox" name="meeting_locked" id="locked" />
+				</label>
+			</div>
 			<div class="pf-element pf-buttons pf-centered">
 				<input class="pf-button btn btn-primary" type="submit" name="submit" value="Submit" />
 			</div>

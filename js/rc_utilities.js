@@ -30,6 +30,11 @@ function rc_notify( title, text, type ) {
 
 function rc_event_edit( evt, callback ) {
 
+    // check for guard element
+    if( $('#nodupe-'+evt.attr.id).length ){
+        return false;
+    }
+
     var notice = $.pnotify({
         text: $('#form_event_edit').html(),
         icon: false,
@@ -46,8 +51,15 @@ function rc_event_edit( evt, callback ) {
         var t = $(this);
         if( t.attr('id') in evt.attr ) {
             t.val(evt.attr[t.attr('id')]);
+            // handle checkboxes
+            if( t.attr('type') == 'checkbox' ) {
+                t.prop("checked", evt.attr[t.attr('id')] );
+            }
         }
     });
+
+    // Add guard element
+    notice.append("<input type='hidden' id='nodupe-"+evt.attr.id+"'>");
 
     notice.find('form.pf-form').submit(function() {
         
@@ -66,7 +78,10 @@ function rc_event_edit( evt, callback ) {
         notice.find('.pf-field').each( function(){
             var t = $(this);
             if( t.attr('id') in evt.attr ) {
-                if(typeof(evt.attr[t.attr('id')]) == 'number' ) {
+                if( t.attr('type') == 'checkbox' ) {
+                    evt.attr[t.attr('id')] = t.prop("checked");
+                }
+                else if(typeof(evt.attr[t.attr('id')]) == 'number' ) {
                     evt.attr[t.attr('id')] = parseInt(t.val(),10);
                 }
                 else {

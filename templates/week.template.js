@@ -71,7 +71,9 @@ var render_week_event = doT.template((function(){/*
      id="{{=it.attr.id}}">
   <div class="rc_event_prepad" style="height:{{=it.attr.t_prepad}}px;"></div>
   <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}<div class='deleteevent'>X</div></div>
-  <div class="rc_event_body">{{=it.attr.ev_text}}</div>
+  <div class="rc_event_body">{{=it.attr.ev_text}}
+    {{? it.attr.locked }}<img class='lockedevent' alt='locked' src='img/padlock.png'></img>{{?}}
+  </div>
   <div class="rc_event_postpad" style="height:{{=it.attr.t_postpad}}px;"></div>
 </div>
 */}).heredoc());

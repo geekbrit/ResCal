@@ -38,9 +38,17 @@
   font-size: 50%;
   color: #A00;
   border: 1px solid #aa0000;
+  border-radius: 12px;
+  -moz-border-radius: 12px;
   text-align: center;
   padding: 1px 3px;
   margin: 2px; }
+
+.lockedevent {
+  clear: both;
+  float: right;
+  width: 1em;
+  height: auto; }
 
 .calimg {
   height: 1em;

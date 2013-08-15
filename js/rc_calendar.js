@@ -180,7 +180,7 @@ function Calendar( element, options )
                             t.resources[resource_id],
                             {
                                 start    : start_time,
-                                date     : date,
+                                date     : date.valueOf(),
                             }
                         ) ) {
                         // was able to render in the new position, delete the original
@@ -234,29 +234,36 @@ function Calendar( element, options )
                      t.eventmanager.deleteEvent, evt.attr.id );
         });
 
-        newev.draggable({
-            appendTo : 'body',
-            helper   : 'clone',
-            zIndex   : 9999,
-/*          drag     : function( event, ui ){
-                        var time_offset = t.options.get_time_offset( event, ui );
-                        var start_time  = nearest_time( time_offset );
-                        ui.helper.find(".rc_event_head").text(start_time);
-                       }
-*/
-        }).resizable({
-            handles: 's',
+        if( !evt.attr.locked ){
+            newev.draggable({
+                appendTo : 'body',
+                helper   : 'clone',
+                zIndex   : 9999,
+    /*          drag     : function( event, ui ){
+                            var time_offset = t.options.get_time_offset( event, ui );
+                            var start_time  = nearest_time( time_offset );
+                            ui.helper.find(".rc_event_head").text(start_time);
+                           }
+    */
+            }).resizable({
+                handles: 's',
 
-            stop: function( event, ui ){
-                var snapheight = ~~(ui.size.height/t.options.intervalpixels);
-                var total_mins = snapheight*t.options.interval;
+                stop: function( event, ui ){
+                    var snapheight = ~~(ui.size.height/t.options.intervalpixels);
+                    var total_mins = snapheight*t.options.interval;
 
-                evt.attr.duration = total_mins - (evt.attr.prep_time + evt.attr.cleanup_time);
-                ui.helper.css('height',snapheight * t.options.intervalpixels -2 + 'px');
-            }
+                    evt.attr.duration = total_mins - (evt.attr.prep_time + evt.attr.cleanup_time);
+                    ui.helper.css('height',snapheight * t.options.intervalpixels -2 + 'px');
+                }
+            })
+        }
 
-        }).click( function(){
-            rc_event_edit( evt, t.view_week_render_event );
+        newev.click( function(){
+            rc_event_edit( evt, function(evt){
+                t.view_week_render_event(evt);
+                t.options.persist(evt);
+                return false;
+            });
         });
 
         return false;   // this is a fix for form submit callback
@@ -281,7 +288,7 @@ function Calendar( element, options )
     {
         return addMinutes_timeOfDay(
             t.options.min_time,
-            ~~(offset / t.options.intervalpixels) * t.options.interval,
+            ~~((offset + t.options.intervalpixels/2) / t.options.intervalpixels) * t.options.interval,
             t.options.max_time
         ).newtime;
     }
@@ -378,7 +385,8 @@ function rc_Event( options )
         prep_time   : 0,                // pre-event room preparation time
         cleanup_time: 0,                // post-event room
         resource    : 'none',           // remove from this resource when added to another
-        written_to_server : false 
+        locked      : false,            // when locked, can not be dragged, resized, or bumped
+        written_to_server : false
     };
 
     t.attr = $.extend( true, {}, defaults, options );
@@ -440,7 +448,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
         var stash = evt.attr;
 
         evt.attr.start   = options.start;
-        evt.attr.date    = options.date.valueOf;      
+        evt.attr.date    = options.date;
         evt.attr.t_offset= options.t_offset;
 
 
@@ -490,15 +498,6 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
 //      3: live Ajax + localStorage for offline working
 
 
-//--- TEST DATA -------------------------------------------------------
-var init_resource = {
-    Room1:{title:"Orca",capacity:250,location:"Rochester North"},
-    Room2:{title:"Narwhal",capacity:50,location:"Rochester North"},
-    Room3:{title:"Walrus",capacity:500,location:"Rochester East"},
-};
-
-//--- END TEST DATA ---------------------------------------------------
-
 
 function Resource( resource_element, init_mode ) {
     var t = this;
@@ -509,18 +508,8 @@ function Resource( resource_element, init_mode ) {
     //
     t.eventpool = {};
 
-    t.id = resource_element.attr('id');
-
-    // initialization
-    switch( init_mode )
-    {
-        case 'localtest': {
-            t.attr = init_resource[t.id];
-            break;
-        }
-
-        default: alert("unrecognized Resource initialization mode");
-    }
+    t.id   = resource_element.attr('id');
+    t.attr = $.parseJSON(resource_element.attr('data-attr'));
 
     //
     // Set up automated event acceptance test (application-level function)
