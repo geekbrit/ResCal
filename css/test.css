@@ -1,3 +1,6 @@
+h1 {
+  margin-left: 180px; }
+
 .rc_bodyweek {
   height: 400px;
   overflow-y: scroll;
@@ -8,8 +11,20 @@
 
 .event_palette {
   position: fixed;
-  top: 10px;
+  top: 50px;
   left: 10px; }
+
+.unassigned {
+  top: 300px;
+  background: #FFD;
+  width: 160px;
+  min-height: 180px;
+  border: 1px solid #888800;
+  text-align: center; }
+  .unassigned h2 {
+    font-size: 18px;
+    margin: 0;
+    padding: 0; }
 
 .ip_spacing {
   margin: 4px; }
@@ -59,3 +74,12 @@
   height: 1em;
   width: auto;
   margin-left: 14px; }
+
+.pf-form .pf-heading {
+  width: auto;
+  height: 160px; }
+
+.form_datepicker {
+  font-size: 80%;
+  position: absolute;
+  left: 230px; }

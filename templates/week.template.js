@@ -62,9 +62,24 @@ var render_week = doT.template((function(){/*
 */}).heredoc());
 
 
-
-// Compiled on http://olado.github.io/doT/
-
+//
+// This function is registered as "postcalrender", a callback to be executed
+//  after every rerender of the calendars
+//
+function adjust_calendar_width()
+{
+  // expand width of containers to accommodate pesky scrollbar
+  // this is specific to the template used in the test system, but the techniques used
+  // may be useful in similar templates where the calendar is scrollable
+  var first_week = $('.rc_bodyweek').first();
+  var days  = $(first_week).find('.rc_day_target');
+  var first = $(days).first();
+  var last  = $(days).last();
+  var retries = 5;
+  while( --retries && $(first).offset().top != $(last).offset().top ){
+    $('.rc_week').animate({width: "+=10px"},0);
+  }
+}
 
 //
 //  Template for an event in the calendar

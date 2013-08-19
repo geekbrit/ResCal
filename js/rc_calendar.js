@@ -9,6 +9,8 @@
         startdate       : new moment().valueOf(),
         render          : 'view_week',
         render_event    : 'view_week_render_event',
+        postcalrender   : function(){},
+
         get_time_offset : function( evt, ui ){return ui.offset.top + $(evt.target).parent().scrollTop() - evt.target.offsetTop;},
 
         // persistent event storage accessor functions
@@ -193,6 +195,9 @@ function Calendar( element, options )
                 }
             }
         });
+
+        // let the application do any required post-render cleanup:
+        t.options.postcalrender();
     }
 
     t.view_week = function( date, resources )
@@ -205,12 +210,22 @@ function Calendar( element, options )
     }
 
 
-    t.view_week_render_event = function( evt )
+    t.view_week_render_event = function( evt, date_changed )
     // evt : event object
     {
         // Delete the old copy of this element if it exists
         if( $('#'+evt.attr.id).length) {
             $('#'+evt.attr.id).remove( );
+        }
+
+        // find new parent if the date has changed
+        if( date_changed ){ 
+            $('#'+evt.attr.resource+' > .rc_day_target').each( function(){
+                if( evt.attr.date == $(this).attr('data-date') ){
+                    evt.attr.parent = $(this).attr('id');
+                    return;
+                }
+            });
         }
 
         var elapsed_mins= evt.attr.prep_time + evt.attr.duration + evt.attr.cleanup_time;
@@ -268,8 +283,8 @@ function Calendar( element, options )
         }
 
         newev.click( function(){
-            rc_event_edit( evt, function(evt){
-                t.view_week_render_event(evt);
+            rc_event_edit( evt, function(evt, date_changed){
+                t.view_week_render_event(evt, date_changed);
                 t.options.persist(evt);
                 return false;
             });

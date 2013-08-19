@@ -46,6 +46,9 @@ function rc_event_edit( evt, callback ) {
         styling: 'jqueryui'
     });
 
+    var datepick = notice.find('.form_datepicker');
+    datepick.datepicker({defaultDate:new Date(evt.attr.date)});
+
     // populate form fields
     notice.find('.pf-field').each( function(){
         var t = $(this);
@@ -63,6 +66,9 @@ function rc_event_edit( evt, callback ) {
 
     notice.find('form.pf-form').submit(function() {
         
+        // recover date
+        var old_date  = evt.attr.date;
+        evt.attr.date = datepick.datepicker("getDate").valueOf();
 
         //!!!! [TO DO] Validate form here
 
@@ -93,6 +99,7 @@ function rc_event_edit( evt, callback ) {
         });
 
         // Close the form
+        $('#nodupe-'+evt.attr.id).remove();
         notice.pnotify({
             title: 'Thank you',
             text: 'Record successfully updated',
@@ -105,7 +112,7 @@ function rc_event_edit( evt, callback ) {
             styling: 'jqueryui'
         });
 
-        return  callback( evt );        // Rerender the event
+        return  callback( evt, evt.attr.date != old_date );        // Rerender the event
     });
 }
 
