@@ -21,7 +21,8 @@ var render_week = doT.template((function(){/*
   {{ for(var i = 0; i < it.col_count; i++ ) { }}
     <div class="{{=it.col_class}}">{{=it.dows[i]+' '+it.months[i]+'/'+it.days[i]}}</div>
   {{ } }}
-  <div class="rc_bodyweek" id='{{=it.resource_id}}'>
+  </div>
+  <div class="rc_bodyweek clearfix" id='{{=it.resource_id}}'>
   <div class="rc_gutter">
   {{var hrcount =0; var t = it.min_time; do { }}
   	<div class='rc_hour_slot'>{{=t}}</div>
@@ -54,7 +55,10 @@ var render_week = doT.template((function(){/*
   {{ } }}
   </div>
 </div>
-{{ $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) }); }}
+{{
+    $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) });
+}}
+
 */}).heredoc());
 
 

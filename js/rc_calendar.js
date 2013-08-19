@@ -9,13 +9,16 @@
         startdate       : new moment().valueOf(),
         render          : 'view_week',
         render_event    : 'view_week_render_event',
-        get_time_offset : function( evt, ui ){return ui.offset.top - evt.target.offsetTop;},
+        get_time_offset : function( evt, ui ){return ui.offset.top + $(evt.target).parent().scrollTop() - evt.target.offsetTop;},
 
         // persistent event storage accessor functions
         // (override with application functions in rc_calendar constructor call)
         persist         : function( evt ){},
         retrieve        : function(){ return [] },
         remove          : function(){},
+
+                          // default insert_policy is simple - allow overlaps:
+        insert_policy   : function( event_list, evt ){event_list[evt.attr.id] = evt;}, 
 
         min_time        : '07:00',   // 7am
         max_time        : '20:00',   // 8pm
@@ -112,7 +115,7 @@ function Calendar( element, options )
     //
     t.resources = [];
     element.find('resource').each( function(i,element) {
-        t.resources[$(this).attr('id')] = new Resource($(this),'localtest');
+        t.resources[$(this).attr('id')] = new Resource( $(this), t.options.insert_policy );
     });
 
     t.initialize_events = function(){
@@ -240,6 +243,12 @@ function Calendar( element, options )
                 helper   : 'clone',
                 zIndex   : 9999,
     /*          drag     : function( event, ui ){
+
+        // [TODO]
+        //      Update Time in helper during drag
+        //      Add "next week, previous week" drag zones?
+        //
+
                             var time_offset = t.options.get_time_offset( event, ui );
                             var start_time  = nearest_time( time_offset );
                             ui.helper.find(".rc_event_head").text(start_time);
@@ -498,8 +507,16 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
 //      3: live Ajax + localStorage for offline working
 
 
+//
+// [TODO] - register per-day availability times for each resource
+//      This accommodates different open/close times on different days, or
+//      worker shifts, or holiday/vacation times.
+//
+//  Implement regular hours function, and specific overrides
+//
 
-function Resource( resource_element, init_mode ) {
+
+function Resource( resource_element, insert_policy ) {
     var t = this;
 
     //
@@ -509,6 +526,7 @@ function Resource( resource_element, init_mode ) {
     t.eventpool = {};
 
     t.id   = resource_element.attr('id');
+    t.insert_policy = insert_policy;
     t.attr = $.parseJSON(resource_element.attr('data-attr'));
 
     //
@@ -547,15 +565,14 @@ function Resource( resource_element, init_mode ) {
         }
         else {
 
-                // [TODO - add in policy code for overlapping events, locked events]
-
-
-
             if( "undefined" == typeof( t.eventpool[event.attr.date] ) ){
                 t.eventpool[event.attr.date] = [];
             }
 
-            t.eventpool[event.attr.date][event.attr.id] = event;
+            //
+            // Policy code for overlapping events, locked events
+            //
+            t.insert_policy( t.eventpool[event.attr.date], event );
             
             if( undefined == no_confirm ){
                 var formatted_date = new moment( event.attr.date ).format("dddd, Do MMM YYYY");

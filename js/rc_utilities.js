@@ -256,3 +256,22 @@ function confirm(message, callback, param) {
         }
     });
 }
+
+
+//
+//  insert_shuffle_meeting
+//  ======================
+//      This is an example callback function that is called when an event is dropped onto
+//      a resource calendar day. Parameters are a list of all events for that resource on
+//      that day, the event that has been dropped onto the calendar, 
+///?????and the function that
+//      is called to rerender moved events.????? 
+//
+//      This example attempts to insert the new event; if the new event overlaps an earlier
+//      event, then it is bumped forward to the end of the existing meeting. Any existing
+//      meetings starting at or after the new meeting are bumped forward, with gaps between
+//      meetings being reduced to minimize disruptions to existing meetings.
+//
+//      The insert will fail if it would require a locked meeting to be bumped, or if a moved
+//      meeting would be pushed beyond the end-of-day for the calendar.
+//
