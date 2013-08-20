@@ -1,8 +1,3 @@
-// Multiline Function String - Nate Ferrero - Public Domain
-(function(){}).__proto__.heredoc = function() {
-    return this.toString().replace(/.*\/\*\n([\s\S]*)\n\*\/.*/m, "$1");
-};
-
 
 // [TODO] Add support for per-day opening/closing times 
 
@@ -59,7 +54,7 @@ var render_week = doT.template((function(){/*
     $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) });
 }}
 
-*/}).heredoc());
+*/}).toString().replace(/.*\/\*\n([\s\S]*)\n\*\/.*/m, "$1"));
 
 
 //
@@ -100,6 +95,8 @@ var render_week_event = doT.template((function(){/*
   <div class="rc_event_body">{{=it.attr.ev_text}}
     {{? it.attr.locked }}<img class='lockedevent' alt='locked' src='img/padlock.png'></img>{{?}}
   </div>
+{{? it.attr.resource != "unassigned_event_resource"}}
   <div class="rc_event_postpad" style="height:{{=it.attr.t_postpad}}px;"></div>
+{{?}}
 </div>
-*/}).heredoc());
+*/}).toString().replace(/.*\/\*\n([\s\S]*)\n\*\/.*/m, "$1"));

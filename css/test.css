@@ -1,5 +1,6 @@
-h1 {
-  margin-left: 180px; }
+.header {
+  margin-left: 180px;
+  width: 640px; }
 
 .rc_bodyweek {
   height: 400px;
@@ -10,16 +11,18 @@ h1 {
   margin-left: 180px; }
 
 .event_palette {
+  border-right: 1px solid #888888;
   position: fixed;
-  top: 50px;
-  left: 10px; }
+  top: 10px;
+  left: 10px;
+  width: 160px; }
 
 .unassigned {
-  top: 300px;
+  top: 330px;
   background: #FFD;
   width: 160px;
   min-height: 180px;
-  border: 1px solid #888800;
+  border-right: 1px solid #888800;
   text-align: center; }
   .unassigned h2 {
     font-size: 18px;
@@ -31,7 +34,9 @@ h1 {
 
 .in_palette {
   -webkit-box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.2);
-  box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.2); }
+  box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.2);
+  margin-left: auto;
+  margin-right: auto; }
 
 .event {
   background: rgba(255, 255, 255, 0.6);
