@@ -66,7 +66,9 @@ var render_week = doT.template((function(){/*
 // This function is registered as "postcalrender", a callback to be executed
 //  after every rerender of the calendars
 //
-function adjust_calendar_width()
+//  calendar_state gives access to the public state of the calendar
+//
+function adjust_calendar_width( calendar_state )
 {
   // expand width of containers to accommodate pesky scrollbar
   // this is specific to the template used in the test system, but the techniques used
@@ -85,11 +87,16 @@ function adjust_calendar_width()
 //  Template for an event in the calendar
 //
 var render_week_event = doT.template((function(){/*
-<div class="rc_event event {{=it.attr.ev_type}}"
-     style="top:{{=it.attr.t_offset}}px;height:{{=it.attr.t_height}}px;"
-     id="{{=it.attr.id}}">
-  <div class="rc_event_prepad" style="height:{{=it.attr.t_prepad}}px;"></div>
-  <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}<div class='deleteevent'>X</div></div>
+<div class="rc_event event {{=it.attr.ev_type}}" id="{{=it.attr.id}}"
+{{? it.attr.resource == "unassigned_event_resource"}}
+    style="height:40px;margin:4px auto;">
+    <div class="rc_event_head">Unassigned
+{{??}}
+    style="top:{{=it.attr.t_offset}}px;height:{{=it.attr.t_height}}px;">
+    <div class="rc_event_prepad" style="height:{{=it.attr.t_prepad}}px;"></div>
+    <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}
+{{?}}
+  <div class='deleteevent'>X</div></div>
   <div class="rc_event_body">{{=it.attr.ev_text}}
     {{? it.attr.locked }}<img class='lockedevent' alt='locked' src='img/padlock.png'></img>{{?}}
   </div>

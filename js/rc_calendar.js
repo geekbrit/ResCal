@@ -119,6 +119,7 @@ function Calendar( element, options )
     element.find('resource').each( function(i,element) {
         t.resources[$(this).attr('id')] = new Resource( $(this), t.options.insert_policy );
     });
+    t.resources['unassigned_event_resource'] = new Resource( $('#unassigned_event_resource'), function(){} );
 
     t.initialize_events = function(){
         t.eventmanager = new rc_EventManager( t.options.retrieve,
@@ -197,7 +198,7 @@ function Calendar( element, options )
         });
 
         // let the application do any required post-render cleanup:
-        t.options.postcalrender();
+        t.options.postcalrender( t );
     }
 
     t.view_week = function( date, resources )
@@ -219,7 +220,8 @@ function Calendar( element, options )
         }
 
         // find new parent if the date has changed
-        if( date_changed ){ 
+        // not a valid operation if the event is in the unassigned resource
+        if( date_changed && "unassigned_event_resource" != evt.attr.resource ){ 
             $('#'+evt.attr.resource+' > .rc_day_target').each( function(){
                 if( evt.attr.date == $(this).attr('data-date') ){
                     evt.attr.parent = $(this).attr('id');
@@ -273,11 +275,14 @@ function Calendar( element, options )
                 handles: 's',
 
                 stop: function( event, ui ){
-                    var snapheight = ~~(ui.size.height/t.options.intervalpixels);
+                    var snapheight = ~~((ui.size.height+(t.options.intervalpixels/2))/t.options.intervalpixels);
                     var total_mins = snapheight*t.options.interval;
 
                     evt.attr.duration = total_mins - (evt.attr.prep_time + evt.attr.cleanup_time);
                     ui.helper.css('height',snapheight * t.options.intervalpixels -2 + 'px');
+                    t.view_week_render_event(evt);
+                    t.options.persist(evt);
+
                 }
             })
         }
@@ -293,6 +298,9 @@ function Calendar( element, options )
         return false;   // this is a fix for form submit callback
     }
 
+    //
+    //  External Events Initialization
+    //
     t.external_events_init = function( events ) {
         for( var event = 0; event < events.length; event++ )
         {
@@ -549,6 +557,9 @@ function Resource( resource_element, insert_policy ) {
     //      This test can be as complex as you like, but should at least
     //      perform basic sanity checking such as ensuring that (for example)
     //      a room can accommodate all of the attendees for a meeting
+
+    // [TODO - fix this so that Resources do not have to specify validation]
+
     t.attr.validateFn = window[resource_element.attr('data-validate')];
     t.attr.validateParams = $.parseJSON(resource_element.attr('data-params'));
 
@@ -574,7 +585,7 @@ function Resource( resource_element, insert_policy ) {
     //      false: unable to add the event
     //
     t.addEvent = function( event, no_confirm ){
-        if( reason = t.attr.validateFn( event.attr, t.attr.validateParams ) ) {
+        if( $.isFunction( t.attr.validateFn ) && (reason = t.attr.validateFn( event.attr, t.attr.validateParams )) ) {
             rc_notify('Unable to add the event','The '+reason+' requirement was not met', 'error');
             return false;
         }
@@ -608,10 +619,8 @@ function Resource( resource_element, insert_policy ) {
         return t.eventpool[date];
     }
 
-    //t.findCollisions = function( event )
-
     return t;
-    }
+  }
 
 }(jQuery))
 

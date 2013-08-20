@@ -16,8 +16,11 @@
 		<div class='ip_spacing'><div class='rc_event vendor event in_palette' data-evtype='vendor'   ><p>Vendor Meeting</p></div></div>
 	</div>
 
-	<div class='event_palette unassigned'>
-		<h2>Unassigned Events</h2>
+	<div id='unassigned_event_resource' data-validate ='void' data-params ='{}' data-attr ='{}';>
+		<div class='event_palette rc_day_target unassigned' id='unassigned_events' data-date='unassigned'>
+			<h2>Unassigned Events</h2>
+			<p>You can drag events here to save them until room, date, and time have been finalized.</p>
+		</div>
 	</div>
 
 	<!-- This is a container class that will hold a calendar for each of the resources defined within it -->
@@ -115,7 +118,8 @@
 	<script src="js/rc_utilities.js" type="text/javascript"></script>
 	<script src="templates/week.template.js" type="text/javascript"></script>
 	<script src="js/rc_calendar.js" type="text/javascript"></script>
-<script type="text/javascript">
+
+    <script type="text/javascript">
 		//
 		//  Example function to verify that a resource can accept an event dropped onto it
 		//
