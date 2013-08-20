@@ -206,7 +206,9 @@ function Calendar( element, options )
     // resources : list of resource objects associated with this calendar
     {
         for( resource in resources ) {
-            display_week( date,  t.resources[resource] );
+            if( resource != "unassigned_event_resource" ){
+                display_week( date,  t.resources[resource] );
+            }
         }
     }
 
