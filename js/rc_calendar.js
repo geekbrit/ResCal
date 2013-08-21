@@ -11,7 +11,9 @@
         render_event    : 'view_week_render_event',
         postcalrender   : function(){},
 
-        get_time_offset : function( evt, ui ){return ui.offset.top + $(evt.target).parent().scrollTop() - evt.target.offsetTop;},
+        get_time_offset : function( draggable, droppable, parent ){
+                            return draggable.offset.top + parent.scrollTop() - droppable.offsetTop;
+                          },
 
         // persistent event storage accessor functions
         // (override with application functions in rc_calendar constructor call)
@@ -150,7 +152,7 @@ function Calendar( element, options )
             drop: function( event, ui ) {
                 var dragged     = $(ui.draggable[0]);
                 var target      = $(event.target);
-                var time_offset = t.options.get_time_offset( event, ui );
+                var time_offset = t.options.get_time_offset( ui, event.target, $(event.target).parent() );
                 var start_time  = nearest_time( time_offset );
                 var date        = new moment( parseInt(target.attr('data-date'),10) ); 
                 var resource_id = target.parent().attr('id');
@@ -259,18 +261,27 @@ function Calendar( element, options )
                 appendTo : 'body',
                 helper   : 'clone',
                 zIndex   : 9999,
-    /*          drag     : function( event, ui ){
-
+                drag     : function( event, ui ){
         // [TODO]
         //      Update Time in helper during drag
         //      Add "next week, previous week" drag zones?
         //
+                            var target = findDroppable( ui );
 
-                            var time_offset = t.options.get_time_offset( event, ui );
-                            var start_time  = nearest_time( time_offset );
-                            ui.helper.find(".rc_event_head").text(start_time);
-                           }
-    */
+                            if( target ){
+                                var tgtdiv = $('#'+target);
+                                // make compatible with 'drop' parameters
+                                tgtdiv.offsetTop = tgtdiv.offset().top;
+                                tgtdiv.offsetLeft = tgtdiv.offset().left;
+                                var time_offset = t.options.get_time_offset( ui, tgtdiv, tgtdiv.parent() );
+                                var start_time  = nearest_time( time_offset );
+                                ui.helper.find(".rc_event_head").text(start_time);
+
+                                console.log( start_time );
+                            }
+
+                        }
+   
             }).resizable({
                 handles: 's',
 
