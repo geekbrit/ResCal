@@ -11,18 +11,22 @@
   margin-left: 180px; }
 
 .event_palette {
-  border-right: 1px solid #888888;
+  border-right: 1px solid #888;
   position: fixed;
-  top: 10px;
   left: 10px;
   width: 160px; }
 
+#new_events {
+  top: 10px; }
+
+#unassigned_event_resource {
+  top: 310px; }
+
 .unassigned {
-  top: 330px;
   background: #FFD;
   width: 160px;
   min-height: 180px;
-  border-right: 1px solid #888800;
+  border-right: 1px solid #880;
   text-align: center; }
   .unassigned h2 {
     font-size: 18px;
@@ -62,7 +66,7 @@
   float: right;
   font-size: 50%;
   color: #A00;
-  border: 1px solid #aa0000;
+  border: 1px solid #A00;
   border-radius: 12px;
   -moz-border-radius: 12px;
   text-align: center;

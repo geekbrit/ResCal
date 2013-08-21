@@ -14,13 +14,21 @@
 .event_palette {
 	border-right:1px solid #888;
     position: fixed;
-	top: 10px;
 	left: 10px;
 	width:160px;
 }
 
+#new_events{
+	top: 10px;
+}
+
+
+#unassigned_event_resource{
+	top: 310px;
+}
+
+
 .unassigned {
-	top: 330px;
 	h2 { font-size:18px; margin:0; padding:0; }
 	background: #FFD;
 	width:160px;

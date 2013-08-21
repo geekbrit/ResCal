@@ -16,15 +16,15 @@
 		   This layout is just one possible way to use the Resource Calendar system; it is fully customizable.</p>
 		<p>Source code for the Resource Calendar jquery plugin, and a description of functionality implemented so far, can be found at: <a href="https://github.com/geekbrit/ResCal">https://github.com/geekbrit/ResCal</a></p>
 	</div>
-	<div class='event_palette'>
+	<div id='new_events' class='event_palette'>
 	    <p>Drag these to a calendar<br>to create a meeting</p>
 		<div class='ip_spacing'><div class='rc_event client event in_palette' data-evtype='client'   ><p>Client Meeting</p></div></div>
 		<div class='ip_spacing'><div class='rc_event internal event in_palette' data-evtype='internal' ><p>Internal Meeting</p></div></div>
 		<div class='ip_spacing'><div class='rc_event vendor event in_palette' data-evtype='vendor'   ><p>Vendor Meeting</p></div></div>
 	</div>
 
-	<div id='unassigned_event_resource' data-validate ='void' data-params ='{}' data-attr ='{}';>
-		<div class='event_palette rc_day_target unassigned' id='unassigned_events' data-date='unassigned'>
+	<div id='unassigned_event_resource' class='event_palette' data-validate ='void' data-params ='{}' data-attr ='{}';>
+		<div class='rc_day_target unassigned' id='unassigned_events' data-date='unassigned'>
 			<h2>Unassigned Events</h2>
 			<p>You can drag events here to save them until room, date, and time have been finalized.</p>
 		</div>
@@ -165,6 +165,7 @@
     {{ } }}
     </div>
   </div>
+  {{ $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) }); }}
 </script>
 
 <script id='render_week_event' type='text/plain'>

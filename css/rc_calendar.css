@@ -13,7 +13,7 @@
   width: 99%;
   max-width: 118px;
   height: 66px;
-  border: 1px solid #888888;
+  border: 1px solid #888;
   font-family: metrophobic,arial; }
   .rc_event .rc_event_head {
     width: 100%;
@@ -35,7 +35,7 @@
   .rc_event #sgrip {
     width: 20px;
     height: 10px;
-    border: 1px solid #888888;
+    border: 1px solid #888;
     border-top: none;
     -webkit-border-bottom-right-radius: 6px;
     -webkit-border-bottom-left-radius: 6px;
@@ -69,7 +69,7 @@
 .col_5dayweek {
   float: left;
   width: 118px;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   border-left: none;
   overflow: hidden;
   position: relative; }
@@ -77,7 +77,7 @@
 .col_7dayweek {
   float: left;
   width: 84px;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   border-left: none;
   overflow: hidden;
   position: relative; }
@@ -85,32 +85,32 @@
 .rc_gutter {
   float: left;
   width: 48px;
-  border: 1px solid #cccccc; }
+  border: 1px solid #ccc; }
 
 .rc_hour_slot {
   height: 71px;
-  border-bottom: 1px solid #cccccc; }
+  border-bottom: 1px solid #ccc; }
 
 .rc_quarters_slot {
   height: 17px;
   width: 100%;
-  border-bottom: 1px dotted #cccccc; }
+  border-bottom: 1px dotted #ccc; }
 
 .rc_quarters_slot:nth-child(even) {
-  border-bottom: 1px solid #cccccc; }
+  border-bottom: 1px solid #ccc; }
 
 .rc_thirds_slot {
   height: 23px;
   width: 100%;
-  border-bottom: 1px dotted #cccccc; }
+  border-bottom: 1px dotted #ccc; }
 
 .rc_thirds_slot:nth-child(3n-3) {
-  border-bottom: 1px solid #cccccc; }
+  border-bottom: 1px solid #ccc; }
 
 .rc_halves_slot {
   height: 35px;
   width: 100%;
-  border-bottom: 1px dotted #cccccc; }
+  border-bottom: 1px dotted #ccc; }
 
 .rc_quarters_slot:nth-child(even) {
-  border-bottom: 1px solid #cccccc; }
+  border-bottom: 1px solid #ccc; }
