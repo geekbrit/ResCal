@@ -245,10 +245,8 @@ function Calendar( element, options )
         evt.attr.t_prepad = ~~((evt.attr.prep_time / t.options.interval) * t.options.intervalpixels);
         evt.attr.t_postpad= ~~((evt.attr.cleanup_time / t.options.interval) * t.options.intervalpixels);
 
-        var eventdiv = $( render_week_event(evt) );
-        var newev = $(eventdiv);
-
-        $('#'+evt.attr.parent).append( newev );
+        $('#'+evt.attr.parent).append( render_week_event(evt) );
+        var newev = $('#'+evt.attr.id);
 
         newev.find('.deleteevent').click(function(event){
             event.stopPropagation();
