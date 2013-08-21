@@ -11,12 +11,8 @@
         render_event    : 'view_week_render_event',
         postcalrender   : function(){},
 
-        get_time_offset : function( draggable, droppable, parent ){
-                            if( undefined != parent ) {
-                                return draggable.offset.top + parent.scrollTop() - droppable.offsetTop;
-                            } else {
-                                return draggable.offset.top - droppable.offsetTop;
-                            }
+        get_time_offset : function( draggable, droppable ){         
+                                return draggable.offset.top - droppable.offset().top;
                           },
 
         // persistent event storage accessor functions
@@ -155,8 +151,23 @@ function Calendar( element, options )
         $('.rc_day_target').droppable({
             drop: function( event, ui ) {
                 var dragged     = $(ui.draggable[0]);
-                var target      = $(event.target);
-                var time_offset = t.options.get_time_offset( ui, event.target, $(event.target).parent() );
+
+                // event.target gets confused if the viewport is smaller than the droppable,
+                // and the scrolled droppable 'virtually' overlaps another viewport containing
+                // droppables. This function call ensures that the visible droppable is used
+                var target_id    = findDroppable( ui );
+                
+                // the other half to this problem is that this function gets called twice,
+                // once for the calendar that you dropped the event on, and once for the
+                // "shadow" calendar hidden underneath it.
+
+                if( target_id != event.target.id ) {
+                    return; // oops... wrong one
+                }
+
+                var target = $('#'+target_id);
+
+                var time_offset = t.options.get_time_offset( ui, target );
                 var start_time  = nearest_time( time_offset );
                 var date        = new moment( parseInt(target.attr('data-date'),10) ); 
                 var resource_id = target.parent().attr('id');
@@ -266,22 +277,14 @@ function Calendar( element, options )
                 helper   : 'clone',
                 zIndex   : 9999,
                 drag     : function( event, ui ){
-        // [TODO]
-        //      Update Time in helper during drag
-        //      Add "next week, previous week" drag zones?
-        //
+
                             var target = findDroppable( ui );
 
                             if( target ){
                                 var tgtdiv = $('#'+target);
-                                // make compatible with 'drop' parameters
-                                tgtdiv.offsetTop = tgtdiv.offset().top;
-                                tgtdiv.offsetLeft = tgtdiv.offset().left;
                                 var time_offset = t.options.get_time_offset( ui, tgtdiv );
                                 var start_time  = nearest_time( time_offset );
                                 ui.helper.find(".rc_event_head").text(start_time);
-
-                                console.log( start_time );
                             }
 
                         }
@@ -358,7 +361,34 @@ function Calendar( element, options )
         return valid_resources;
     }
 
+    //
+    //  findDroppable
+    //  =============
+    //      Called during dragging and on drop, this function returns the id of a div beneath
+    //      the draggable object, if that div is visible and a droppable target.
+    //
+    function findDroppable( ui )
+    {
+        retval = false;
 
+        // [TODO] should cache this selection...
+        $('.ui-droppable').each(function(){
+
+            var parent = $(this).parent();
+            var viewableTop = parent.position().top;
+            var viewableBottom = viewableTop + parent.height();
+            var pos = ui.position;
+
+            if( pos.top  > viewableTop &&
+                pos.top  < viewableBottom &&
+                (pos.left + 20) > $(this).position().left &&
+                pos.left < $(this).position().left + $(this).width() ){
+                return retval = $(this).attr('id');
+             }
+        })
+
+        return retval;
+    }
 
     function display_week( date, resource )
     // date : epoch milliseconds
@@ -452,7 +482,6 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
     var render      = display;
     var persistEvent= save_event;
     var killEvent   = delete_event;
-    var to_write    = [];      // [NOTE] - this may disappear, it is for async writes to a server
     var t = this;
 
     t.Events = retrieve_events();
@@ -474,7 +503,6 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
         var id = new_event.attr.id;
 
         t.Events[ id ] = new_event;
-        to_write[id] = true;
 
         if( resource.addEvent( new_event ) ) {
             new_event.attr.resource = resource.id;
@@ -487,7 +515,6 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
     }
 
     t.moveEvent = function( evt, parent, old_resource, new_resource, options ) {
-        to_write[evt.attr.id] = true;
 
         // have to update event attributes before attempting to move the event,
         // but have to be prepared to revert them if the new resource rejects the event

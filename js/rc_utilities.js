@@ -266,37 +266,6 @@ function confirm(message, callback, param) {
 
 
 //
-//  findDroppable
-//  =============
-//      Called during dragging, this function returns the id of a div beneath the draggable
-//      object, if that div is a droppable target.
-//
-
-function findDroppable( ui )
-{
-    retval = false;
-
-    // should cache this selection...
-    $('.ui-droppable').each(function(){
-
-        var parent = $(this).parent();
-        var viewableTop = parent.position().top;
-        var viewableBottom = viewableTop + parent.height();
-        var pos = ui.position;
-
-        if( pos.top  > viewableTop &&
-            pos.top  < viewableBottom &&
-            pos.left > $(this).position().left &&
-            pos.left < $(this).position().left + $(this).width() ){
-            return retval = $(this).attr('id');
-         }
-    })
-
-    return retval;
-}
-
-
-//
 //  insert_shuffle_meeting
 //  ======================
 //      This is an example callback function that is called when an event is dropped onto
