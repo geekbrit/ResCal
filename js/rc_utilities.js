@@ -279,8 +279,8 @@ function findDroppable( ui )
     // should cache this selection...
     $('.ui-droppable').each(function(){
 
-        var parent = $($(this).parent());
-        var viewableTop = parent.position().top + parent.scrollTop();
+        var parent = $(this).parent();
+        var viewableTop = parent.position().top;
         var viewableBottom = viewableTop + parent.height();
         var pos = ui.position;
 

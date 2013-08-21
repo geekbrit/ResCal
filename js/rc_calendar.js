@@ -12,7 +12,11 @@
         postcalrender   : function(){},
 
         get_time_offset : function( draggable, droppable, parent ){
-                            return draggable.offset.top + parent.scrollTop() - droppable.offsetTop;
+                            if( undefined != parent ) {
+                                return draggable.offset.top + parent.scrollTop() - droppable.offsetTop;
+                            } else {
+                                return draggable.offset.top - droppable.offsetTop;
+                            }
                           },
 
         // persistent event storage accessor functions
@@ -273,7 +277,7 @@ function Calendar( element, options )
                                 // make compatible with 'drop' parameters
                                 tgtdiv.offsetTop = tgtdiv.offset().top;
                                 tgtdiv.offsetLeft = tgtdiv.offset().left;
-                                var time_offset = t.options.get_time_offset( ui, tgtdiv, tgtdiv.parent() );
+                                var time_offset = t.options.get_time_offset( ui, tgtdiv );
                                 var start_time  = nearest_time( time_offset );
                                 ui.helper.find(".rc_event_head").text(start_time);
 
