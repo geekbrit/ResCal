@@ -11,6 +11,16 @@
 
 .rc_day_target {
   overflow: auto; }
+  .rc_day_target .pre_day {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.1); }
+  .rc_day_target .post_day {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.1); }
 
 .rc_event {
   width: 99%;

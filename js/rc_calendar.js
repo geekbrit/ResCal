@@ -30,6 +30,7 @@
         render_event    : 'view_week_render_event',
         postcalrender   : function(){},
 
+        // get_time_offset calculates distance in pixels of booking from start-of-day
         get_time_offset : function( draggable, droppable ){         
                                 return draggable.offset.top - droppable.offset().top;
                           },
@@ -45,6 +46,9 @@
 
         min_time        : '07:00',   // 7am
         max_time        : '20:00',   // 8pm
+
+        get_open_time   : function( date_ms, resource ){ return ['07:00','20:00']; },
+
         interval        : 20,        // minutes
         intervalpixels  : 24, 
         weekends        : false,
@@ -386,11 +390,14 @@ function Calendar( element, options )
     //      Called during dragging and on drop, this function returns the id of a div beneath
     //      the draggable object, if that div is visible and a droppable target.
     //
+    //  [TODO - problem dragging new event onto scrolled Narwhal, ends up in Orca]
+    //
     function findDroppable( ui )
     {
         retval = false;
+        var pos = ui.offset;
 
-        // [TODO] should cache this selection...
+        // [TODO] should probably cache this selection...
         $('.ui-droppable').each(function(){
 
             var parent = $(this).parent();
@@ -398,8 +405,6 @@ function Calendar( element, options )
             var adjust_scroll = (parent.css('position') == 'fixed') ? $('body').scrollTop() : 0;
             var viewableTop = parent.position().top + adjust_scroll;
             var viewableBottom = viewableTop + parent.height() + adjust_scroll;
-
-            var pos = ui.position;
 
             if( pos.top  > viewableTop &&
                 pos.top  < viewableBottom &&
@@ -421,6 +426,8 @@ function Calendar( element, options )
             params.months = [];
             params.dows = [];
             params.dates = [];
+            params.opentime = [];
+            params.closetime = [];
             params.min_time = t.options.min_time;
             params.max_time = t.options.max_time;
             params.inc_time = t.options.interval;
@@ -443,6 +450,11 @@ function Calendar( element, options )
         //--- header ---
         for(var i = 0; i < params.col_count; i++ ) {
             params.dates[i] = dcalc.valueOf();
+
+            var openclose = t.options.get_open_time( params.dates[i], resource );
+            params.opentime[i]  = ((diffMinutes_timeOfDay( t.options.min_time, openclose[0] )/ t.options.interval) * t.options.intervalpixels);
+            params.closetime[i] = ((diffMinutes_timeOfDay( openclose[1], params.max_time )/ t.options.interval) * t.options.intervalpixels);
+
             params.dows[i]  = t.options.days[ (i+t.options.startweek) % 7 ];
             params.months[i]= (1+dcalc.getMonth());
             params.days[i]  = dcalc.getDate();

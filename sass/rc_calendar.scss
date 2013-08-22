@@ -30,6 +30,18 @@ $col_7days_width : 595/7 - 1px;
 
 .rc_day_target {
     overflow:auto;
+    .pre_day{
+    	position:absolute;
+    	top:0;
+    	width:100%;
+    	background:rgba(0,0,0,0.1);
+    }
+    .post_day{
+    	position:absolute;
+    	bottom:0;
+    	width:100%;
+    	background:rgba(0,0,0,0.1);
+    }
 }
 
 

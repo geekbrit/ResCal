@@ -183,6 +183,8 @@
 
     {{ for(var i = 0; i < it.col_count; i++ ) { }}
       <div class="rc_day_target {{=it.col_class}}" id="{{= it.resource_name+'_'+it.months[i]+'_'+it.days[i] }}" data-date="{{=it.dates[i]}}">
+      <div class="pre_day" style="height:{{=it.opentime[i]}}px"></div>
+      <div class="post_day" style="height:{{=it.closetime[i]}}px"></div>
         {{ for(var j = 0; j < hrcount; j++ ) { }}
           {{? it.inc_time == 15 }}
             <div class="rc_quarters_slot"></div>
@@ -335,12 +337,35 @@
 			$('.calendar').rc_calendar( 'render', moment(date).valueOf() );
 		}
 
+		//
+		// This function returns the opening and closing times for any given date
+		//  and resource (resources may have different availability, but this isn't 
+		//  shown in the example). In a real system this would be a server AJAX call,
+		//  which would include a lookup for holidays, vacations and company shutdowns
+		//
+		function openTimes( date_ms, resource )
+		{
+			var times = [
+				 ['10:00','16:30'],
+				 ['09:00','18:30'],
+				 ['08:00','19:00'],
+				 ['10:00','18:00'],
+				 ['08:00','19:00'],
+				 ['08:00','20:00'],
+				 ['09:30','18:30']
+						];
+			var d = new Date( date_ms );
+			return times[d.getDay()];
+		}
+
+
 		$(document).ready(function() {
 			$('.calendar').rc_calendar({
 				persist 		: saveEvent,
 				retrieve 		: loadEvents,
 				remove  		: removeEvent,
-				postcalrender 	: adjust_calendar_width, 
+				postcalrender 	: adjust_calendar_width,
+				get_open_time   : openTimes, 
 			});
 			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
 		});
