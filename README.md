@@ -1,13 +1,15 @@
 # Resource Calendar
 
 ## Status
-Working framework in place, currently ~75% feature-complete for the first calendar view (view one week for each
+Working framework in place, currently ~95% feature-complete for the first calendar view (view one week for each
 resource associated with a calendar, time slots arranged vertically). At this point you can:
 * Drag one of the predefined meeting types onto any of the resource calendars
 * Drag meetings within and between resources
 * Click on meetings to open an event-editing box
 * Drag the bottom edge of a meeting to change its overall duration
 * Delete an event by clicking on the 'X' in the top-right corner of the event
+* Click on the calendar icon to change to a different week
+* Configure 7-day, or 5-day weeks, with choice of start-of-week day
 
 The test/demo system uses localStorage to provide event persistence. In a real implementation, this would be
 replaced by, or enhanced with server-side storage using Ajax transactions.
