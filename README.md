@@ -12,7 +12,8 @@ resource associated with a calendar, time slots arranged vertically). At this po
 * Configure 7-day, or 5-day weeks, with choice of start-of-week day
 
 The test/demo system uses localStorage to provide event persistence. In a real implementation, this would be
-replaced by, or enhanced with server-side storage using Ajax transactions.
+replaced by, or enhanced with server-side storage using Ajax transactions. The demo system passes in functions
+event persistence when creating the calendar; these can be replaced without modifying the calendar plugin.
 
 
 ## Objective
