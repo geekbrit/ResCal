@@ -9,6 +9,9 @@
 .clearfix {
   display: inline-block; }
 
+.rc_day_target {
+  overflow: auto; }
+
 .rc_event {
   width: 99%;
   max-width: 118px;

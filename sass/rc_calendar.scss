@@ -21,6 +21,11 @@ $col_7days_width : 595/7 - 1px;
 	display: inline-block;
 }
 
+.rc_day_target {
+    overflow:auto;
+}
+
+
 .rc_event {
 	width: 99%;
 	max-width:$col_5days_width;

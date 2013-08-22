@@ -273,11 +273,12 @@ function Calendar( element, options )
 
         if( !evt.attr.locked ){
             newev.draggable({
+                scroll   : true,
                 appendTo : 'body',
                 helper   : 'clone',
                 zIndex   : 9999,
                 drag     : function( event, ui ){
-
+                            
                             var target = findDroppable( ui );
 
                             if( target ){
@@ -288,7 +289,6 @@ function Calendar( element, options )
                             }
 
                         }
-   
             }).resizable({
                 handles: 's',
 
