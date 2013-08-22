@@ -1,3 +1,43 @@
+<!--
+//=============================================================================
+//	Resource Calendar Usage Example
+//	-------------------------------
+//
+//		One Calendar may have multiple resources, and events (bookings)
+//		can be freely dragged between those resources. This example shows
+//		a "calendar-week" for each of three resources, in this case rooms.
+//
+//		It would also be possible to show a single "calendar-day" with all
+//		the resources side by side, or a month per resource could be shown.
+//
+//	    To accomplish this, different rendering templates for rendering a
+//		calendar and for rendering an event would be required, and the
+//		default "render" and "render_event" options would be overridden
+//		when instantiating the rc_calendar.
+//
+//		This file contains:
+//			* Minimal page layout code
+//			* Resource declarations with parameters that can be used for
+//			  automatic sanity-checking of booking placement (for example,
+//			  ensuring that a 250 person conference is not booked into a
+//			  room with a 10 person capacity)
+//			* A (hidden) form that is used as the template for the popup
+//			  booking-editing form when a booking is clicked
+//			* Example templates. These are embedded within <script> tags;
+//			  I'd have prefered to keep them out of the html page, but
+//			  alternative options have other issues (javascript "HereDoc"
+//			  implementations not being cross-browser compatible & so on).
+//			* Javascript functions for validating event placement, and
+//			  managing persistent storage. These would be application-
+//			  specific in a real system, so I have kept them separate from
+//			  the Resource Calendar javascript files.
+//			* rc_calendar instantiation example in the document ready function
+//
+//=============================================================================
+//  Author    : Peter Maloy, August 2013
+//  Repository: https://github.com/geekbrit/ResCal
+//=============================================================================
+-->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
@@ -11,9 +51,9 @@
 <body>
 	<div class='header'>
 		<h1>Resource Calendar Demo Page</h1>
-		<p>Rendering of calendars and events has been abstracted out to a javascript template file that
-		   uses the "doT.js" templating system [<a href='http://olado.github.io/doT/'>http://olado.github.io/doT/</a>].
-		   This layout is just one possible way to use the Resource Calendar system; it is fully customizable.</p>
+		<p>Rendering of calendars and events has been abstracted out to javascript template functions that
+		   use the "doT.js" templating system [<a href='http://olado.github.io/doT/'>http://olado.github.io/doT/</a>].
+		   This layout is just one possible way to use the Resource Calendar system; it is fully customizable and configurable.</p>
 		<p>Source code for the Resource Calendar jquery plugin, and a description of functionality implemented so far, can be found at: <a href="https://github.com/geekbrit/ResCal">https://github.com/geekbrit/ResCal</a></p>
 	</div>
 	<div id='new_events' class='event_palette'>
@@ -191,6 +231,7 @@
 <!-- END TEMPLATES - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
 	<script src="http://code.jquery.com/jquery-1.10.2.js" type="text/javascript"></script>
+	<!-- jquery-ui down-revved because 1.10.3 has issues with dragging in scrolled pages -->
 	<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js" type="text/javascript"></script>
 	<script src="js/jquery.pnotify.js" type="text/javascript"></script>
 	<script src="js/moment.min.js" type="text/javascript"></script>
@@ -255,6 +296,28 @@
 		function removeEvent( id )
 		{
 			localStorage.removeItem( id );
+		}
+
+
+		//
+		// This function is registered as "postcalrender", a callback to be executed
+		//  after every rerender of the calendars
+		//
+		//  calendar_state gives access to the public state of the calendar
+		//
+		function adjust_calendar_width( calendar_state )
+		{
+		  // expand width of containers to accommodate pesky scrollbar
+		  // this is specific to the template used in the test system, but the techniques used
+		  // may be useful in similar templates where the calendar is scrollable
+		  var first_week = $('.rc_bodyweek').first();
+		  var days  = $(first_week).find('.rc_day_target');
+		  var first = $(days).first();
+		  var last  = $(days).last();
+		  var retries = 5;
+		  while( --retries && $(first).offset().top != $(last).offset().top ){
+		    $('.rc_week').animate({width: "+=10px"},0);
+		  }
 		}
 
 

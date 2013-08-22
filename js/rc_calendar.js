@@ -1,7 +1,26 @@
+//=============================================================================
 //
 //  Resource Calendar Plugin
 //  ========================
+//      Flexible booking management system. This file contains:
+//          rc_calendar - routes rendering of calendars and bookings to
+//                        app-specific rendering functions (examples
+//                        provided in test.html)
+//                      - handles DOM events related to bookings
 //
+//          rc_resource - groups bookings for a particular resource such as a
+//                        room or member of staff. When rendering a calendar
+//                        for a particular day, the associated Resource returns
+//                        a list of bookings for that day
+//
+//          rc_eventManager
+//                      - manages movement of bookings between resources
+//                      - calls user-supplied functions for booking retrieval,
+//                        persistence and deletion
+//=============================================================================
+//  Author    : Peter Maloy, August 2013
+//  Repository: https://github.com/geekbrit/ResCal
+//=============================================================================
 (function($) {
 
     var defaults = {
@@ -119,9 +138,9 @@ function Calendar( element, options )
     //
     t.resources = [];
     element.find('resource').each( function(i,element) {
-        t.resources[$(this).attr('id')] = new Resource( $(this), t.options.insert_policy );
+        t.resources[$(this).attr('id')] = new rc_resource( $(this), t.options.insert_policy );
     });
-    t.resources['unassigned_event_resource'] = new Resource( $('#unassigned_event_resource'), function(){} );
+    t.resources['unassigned_event_resource'] = new rc_resource( $('#unassigned_event_resource'), function(){} );
 
     t.initialize_events = function(){
         t.eventmanager = new rc_EventManager( t.options.retrieve,
@@ -375,8 +394,11 @@ function Calendar( element, options )
         $('.ui-droppable').each(function(){
 
             var parent = $(this).parent();
-            var viewableTop = parent.position().top;
-            var viewableBottom = viewableTop + parent.height();
+            // fixed elements get left behind in the coordinate system when the page is scrolled
+            var adjust_scroll = (parent.css('position') == 'fixed') ? $('body').scrollTop() : 0;
+            var viewableTop = parent.position().top + adjust_scroll;
+            var viewableBottom = viewableTop + parent.height() + adjust_scroll;
+
             var pos = ui.position;
 
             if( pos.top  > viewableTop &&
@@ -559,8 +581,8 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
 
 
 //
-//  Resource Class
-//  --------------
+//  rc_resource Class
+//  -----------------
 //      Calendars are associated with one or more resources
 //      When a Calendar is rendered, it retrieves a list of Events from each
 //      associated Resource for each timeslot being rendered.
@@ -581,7 +603,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
 //
 
 
-function Resource( resource_element, insert_policy ) {
+function rc_resource( resource_element, insert_policy ) {
     var t = this;
 
     //

@@ -17,6 +17,9 @@
 //              modifying rc_calendar.js.
 //
 //=============================================================================
+//  Author    : Peter Maloy, August 2013
+//  Repository: https://github.com/geekbrit/ResCal
+//=============================================================================
 
 function rc_notify( title, text, type ) {
     $.pnotify({
