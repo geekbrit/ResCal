@@ -1,5 +1,7 @@
 # Resource Calendar
 
+A demo/test page using the files in this repository can be found at [codesprite.com/rc/test.html](http://codesprite.com/rc/test.html)
+
 ## Status
 Working framework in place, currently ~95% feature-complete for the first calendar view (view one week for each
 resource associated with a calendar, time slots arranged vertically). At this point you can:
