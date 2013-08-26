@@ -178,10 +178,11 @@ function addMinutes_timeOfDay( start, increment, end )
 {
     var startmins = convert_to_minutes( start );
     var endmins   = convert_to_minutes( end );
+    var newmins   = startmins + increment;
 
-    var newtime = convert_to_time( startmins + increment, ( 'm' == start[-1] ) );
+    var newtime = convert_to_time( newmins, ( 'm' == start[-1] ) );
 
-    return { newtime:newtime, over:(startmins+increment)>=endmins };
+    return { newtime:newtime, over:newmins >= endmins };
 }
 
 //
@@ -236,46 +237,10 @@ function convert_to_time( t, ampm )
 
 
 //
-// Unfortunately, Pines Notify does not have a "confirm" function, which would be nice for consistency
-//  Using a jquery ui dialog, code lifted/adapted from here:
-//       http://www.vrusso.com.br/blog/2011/03/unobtrusive-confirm-javascript-replacement-with-jquery-ui-dialog/
-//
-function confirm(message, callback, param) {
-    $('body').append('<div id="confirm" style="display:none">'+message+'</div>'); // dont forget to hide this!
-    $( "#confirm" ).dialog({
-        resizable: false,
-        title: 'Please Confirm',
-        modal: true,
-        buttons: [
-            {
-                text: "Yes",
-                click: function() {
-                    $(this).dialog("close");
-                    if ($.isFunction(callback)) {   
-                        callback( param );
-                    }
-                
-                }
-            },{
-                text: "No",
-                click: function() { $(this).dialog("close");}
-            }
-        ],
-        close: function(event, ui) { 
-            $('#confirm').remove();
-        }
-    });
-}
-
-
-//
 //  insert_shuffle_meeting
 //  ======================
 //      This is an example callback function that is called when an event is dropped onto
-//      a resource calendar day. Parameters are a list of all events for that resource on
-//      that day, the event that has been dropped onto the calendar, 
-///?????and the function that
-//      is called to rerender moved events.????? 
+//      a resource calendar day.
 //
 //      This example attempts to insert the new event; if the new event overlaps an earlier
 //      event, then it is bumped forward to the end of the existing meeting. Any existing
@@ -285,3 +250,132 @@ function confirm(message, callback, param) {
 //      The insert will fail if it would require a locked meeting to be bumped, or if a moved
 //      meeting would be pushed beyond the end-of-day for the calendar.
 //
+
+function insert_shuffle_meeting( event_list, evt, open_times, persist, render ){
+
+    var revert = {};
+    var keys = [];
+
+    for (var key in event_list) {
+        if (event_list.hasOwnProperty(key)) {
+            keys.push(key);
+            revert[key] = $.extend({},event_list[key].attr);
+        }
+    }
+
+    var sorted_event_list = keys.sort(function(a,b){ return event_list[a].attr.startmins - event_list[b].attr.startmins });
+    
+    var error;
+    if( ( error = insert_shuffle_item( event_list, evt, sorted_event_list, open_times, persist, render )) )
+    {
+        // failed - report & revert to original start times
+        rc_notify( "Failed to place event", error, "error" )
+
+        for( var i = 0; i < keys.length; i++ ) {
+            var this_evt = event_list[keys[i]];
+            this_evt.attr = $.extend({},revert[keys[i]]);
+            render( this_evt );
+            persist( this_evt );
+        }
+        return true;    // failed to insert
+    }
+
+    return false;       // no error
+
+}
+
+//
+// separated out only to make error reporting & revert to original times cleaner
+//
+
+function insert_shuffle_item( event_list, insert_evt, sorted_keys, open_times, persist, render ){
+    //  Parameters:
+    //      event_list  - events for a specific date, returned by a resource
+    //      insert_evt  - event that has just been added (exists in event_list)
+    //      sorted_keys - chronologically sorted index into event_list
+    //      open_times  - [start, end of day] time for this date:resource
+    //      persist     - function to call to save changes to modified events
+    //      render      - function to call to rerender modified events
+    
+    // Find events that overlap the newly-dropped event, move down.
+    // Fail if this causes an event to be bumped off of the current day
+    // Bump new event forward if it overlaps an earlier event
+
+    var start_of_day   = convert_to_minutes( open_times[0] );
+    var end_of_day = convert_to_minutes( open_times[1] );
+
+    // make sure this event is being inserted after the resource becomes available
+    if( insert_evt.attr.startmins < start_of_day ) {
+        return "Events can not be placed before the start of day";
+    }
+
+    // Find insertion point in sorted list
+    var i = sorted_keys.length;
+    var key = insert_evt.attr.id;
+    do { i--; } while( i && key != sorted_keys[i] )
+
+    // check for overlap with the immediately-previous event, if any
+    var previous_evt = event_list[sorted_keys[i-1]];
+    if( i &&  previous_evt.attr.id != insert_evt.attr.id
+          &&  insert_evt.attr.startmins >= previous_evt.attr.startmins
+          &&  insert_evt.attr.startmins <  previous_evt.attr.endmins ) {
+
+        var confirmed = true;
+        confirmed = confirm("This event overlaps an earlier event; move this event after the earlier event?");
+        if( !confirmed )
+        {
+            if( confirm("Allow this event to overlap?") )
+            {
+                return false
+            }
+            else
+            {
+                return "Reverting the event to its previous time";
+            }
+        }
+        insert_evt.set_start_time( previous_evt.attr.end );
+
+        render( insert_evt );
+        persist( insert_evt );
+    }
+
+    if( insert_evt.attr.endmins > end_of_day  ){
+        return "This change would cause the meeting to extend beyond the end of the day";
+    }
+
+    // i points to inserted event; while there is an overlap with a later event, 
+    // bump the later event forward
+    
+    var first = true;
+
+    while( ++i < sorted_keys.length
+       &&  event_list[sorted_keys[i-1]].attr.endmins > event_list[sorted_keys[i]].attr.startmins ){
+
+        if( first ){
+            first = false;
+            if( !confirm("This event overlaps a later event; move later event(s)?") )
+            {
+                return "Insufficient time available to accommodate event";
+            }
+        }
+
+        var this_evt       = event_list[sorted_keys[i]];
+            previous_event = event_list[sorted_keys[i-1]];
+
+        if( this_evt.attr.locked ){
+            return "This change can't be made due to a locked event";
+        }
+
+        this_evt.set_start_time( previous_event.attr.end );
+
+        if( this_evt.attr.endmins > end_of_day  ){
+            return "This change would cause a meeting to extend beyond the end of the day";
+        }
+
+        render( this_evt );
+        persist( this_evt );
+    }
+
+    return false;   // completed without error
+}
+

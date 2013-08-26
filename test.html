@@ -76,7 +76,7 @@
 		<resource id='Room1'
 				  data-validate	='validateEvent'
 				  data-params  	='{"capacity":["LE",30], "campus":["EQ","N"]}'
-				  data-attr    	='{"title":"Orca","capacity":250,"location":"Rochester North"}';
+				  data-attr    	='{"title":"Orca","capacity":30,"location":"Rochester North"}';
 				  >
 		</resource>
 		<resource id='Room2'
@@ -88,7 +88,7 @@
 		<resource id='Room3'
 				  data-validate	='validateEvent'
 				  data-params	='{"capacity":["LE",120], "campus":["EQ","E"]}'
-				  data-attr		='{"title":"Walrus","capacity":500,"location":"Rochester East"}'
+				  data-attr		='{"title":"Walrus","capacity":120,"location":"Rochester East"}'
 				  >
 		</resource>
 
@@ -365,11 +365,24 @@
 				retrieve 		: loadEvents,
 				remove  		: removeEvent,
 				postcalrender 	: adjust_calendar_width,
-				get_open_time   : openTimes, 
+				get_open_time   : openTimes,
+				insert_policy	: insert_shuffle_meeting,
 			});
 			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
 		});
 
+
+function manual_run(){
+			$('.calendar').rc_calendar({
+				persist 		: saveEvent,
+				retrieve 		: loadEvents,
+				remove  		: removeEvent,
+				postcalrender 	: adjust_calendar_width,
+				get_open_time   : openTimes, 
+				insert_policy	: insert_shuffle_meeting,
+			});
+			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );	
+}
 
 	</script>
 </body>

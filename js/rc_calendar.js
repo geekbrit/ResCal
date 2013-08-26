@@ -41,8 +41,8 @@
         retrieve        : function(){ return [] },
         remove          : function(){},
 
-                          // default insert_policy is simple - allow overlaps:
-        insert_policy   : function( event_list, evt ){event_list[evt.attr.id] = evt;}, 
+                          // default insert_policy is simple - do nothing, allow overlaps:
+        insert_policy   : function( event_list, evt, end_of_day ){}, 
 
         min_time        : '07:00',   // 7am
         max_time        : '20:00',   // 8pm
@@ -131,10 +131,16 @@
 function Calendar( element, options )
 {
     var t = this;
+    var global_timeformat;
 
 //--- Exports ---
     t.element = element;
     t.options = options;
+    t.options.baseminutes = convert_to_minutes(t.options.min_time); // used for event rendering
+
+    global_timeformat = t.options.min_time[-1] == 'm';  // true if times in am/pm format
+                                                        // almost certainly a localization
+                                                        // problem here
 
     //
     // look for <resource> elements within the calendar entity,
@@ -142,17 +148,18 @@ function Calendar( element, options )
     //
     t.resources = [];
     element.find('resource').each( function(i,element) {
-        t.resources[$(this).attr('id')] = new rc_resource( $(this), t.options.insert_policy );
+        t.resources[$(this).attr('id')] = new rc_resource( $(this), t.options.get_open_time );
     });
-    t.resources['unassigned_event_resource'] = new rc_resource( $('#unassigned_event_resource'), function(){} );
+    t.resources['unassigned_event_resource'] = new rc_resource( $('#unassigned_event_resource'), function(){return[t.options.min_time,t.options.max_time]} );
 
     t.initialize_events = function(){
         t.eventmanager = new rc_EventManager( t.options.retrieve,
                                               t.options.persist,
                                               t.options.remove,
+                                              t.options.insert_policy,
                                               t.resources,
                                               t[t.options.render_event] );
-    }    
+    }
 
 
 //--- Public Methods ---
@@ -176,8 +183,8 @@ function Calendar( element, options )
                 var dragged     = $(ui.draggable[0]);
 
                 // event.target gets confused if the viewport is smaller than the droppable,
-                // and the scrolled droppable 'virtually' overlaps another viewport containing
-                // droppables. This function call ensures that the visible droppable is used
+                // and the scrolled droppable 'virtually' overlaps droppables from another viewport.
+                // This function call ensures that the visible droppable is used
                 var target_id    = findDroppable( ui );
                 
                 // the other half to this problem is that this function gets called twice,
@@ -272,16 +279,8 @@ function Calendar( element, options )
             });
         }
 
-        var elapsed_mins= evt.attr.prep_time + evt.attr.duration + evt.attr.cleanup_time;
-
-        evt.attr.end    = addMinutes_timeOfDay(
-                            evt.attr.start,
-                            elapsed_mins,
-                            evt.attr.start ).newtime;
-
-
-        evt.attr.t_offset = ~~(diffMinutes_timeOfDay( t.options.min_time, evt.attr.start ) / t.options.interval * t.options.intervalpixels);
-        evt.attr.t_height = ~~((elapsed_mins / t.options.interval) * t.options.intervalpixels) -2;
+        evt.attr.t_offset = ~~(evt.attr.startmins - t.options.baseminutes) / t.options.interval * t.options.intervalpixels;
+        evt.attr.t_height = ~~(((evt.attr.endmins-evt.attr.startmins) / t.options.interval) * t.options.intervalpixels) -2;
         evt.attr.t_prepad = ~~((evt.attr.prep_time / t.options.interval) * t.options.intervalpixels);
         evt.attr.t_postpad= ~~((evt.attr.cleanup_time / t.options.interval) * t.options.intervalpixels);
 
@@ -290,8 +289,13 @@ function Calendar( element, options )
 
         newev.find('.deleteevent').click(function(event){
             event.stopPropagation();
-            confirm( "You are about to delete this event; this action can not be undone! Confirm deletion?",
-                     t.eventmanager.deleteEvent, evt.attr.id );
+
+            if( confirm("You are about to delete this event; this action can not be undone! Confirm deletion?") ){
+                t.eventmanager.deleteEvent( evt.attr.id );
+            }
+                     
+
+
         });
 
         if( !evt.attr.locked ){
@@ -319,7 +323,7 @@ function Calendar( element, options )
                     var snapheight = ~~((ui.size.height+(t.options.intervalpixels/2))/t.options.intervalpixels);
                     var total_mins = snapheight*t.options.interval;
 
-                    evt.attr.duration = total_mins - (evt.attr.prep_time + evt.attr.cleanup_time);
+                    evt.set_duration( total_mins - (evt.attr.prep_time + evt.attr.cleanup_time) );
                     ui.helper.css('height',snapheight * t.options.intervalpixels -2 + 'px');
                     t.view_week_render_event(evt);
                     t.options.persist(evt);
@@ -389,8 +393,6 @@ function Calendar( element, options )
     //  =============
     //      Called during dragging and on drop, this function returns the id of a div beneath
     //      the draggable object, if that div is visible and a droppable target.
-    //
-    //  [TODO - problem dragging new event onto scrolled Narwhal, ends up in Orca]
     //
     function findDroppable( ui )
     {
@@ -483,10 +485,35 @@ function Calendar( element, options )
 //  -----------
 //      Basic event characteristics that can be extended with application-specific code
 //
-
+//  [REVIEW]
+//  Ambivalent about global_timeformat; could be eliminated here and managed 
+//  only in convert_to_time( t, ampm ) helper function.
+//
 function rc_Event( options )
 {
     var t = this;
+
+    t.set_start_time = function( s ) {
+        if( "number" == typeof(s) ){
+            t.attr.startmins = s;
+            t.attr.start     = convert_to_time( s, global_timeformat ) ;
+            t.attr.ampm      = global_timeformat;
+        }
+        else {
+            t.attr.start     = s; 
+            t.attr.startmins = convert_to_minutes( s );
+            t.attr.ampm      = ( 'm' == s[-1] ); // if true, show times in 12hr am/pm format
+        }
+
+        t.attr.endmins   = t.attr.startmins + t.attr.duration + t.attr.prep_time + t.attr.cleanup_time;
+        t.attr.end       = convert_to_time( t.attr.endmins, t.attr.ampm );
+    }
+
+    t.set_duration = function( d ) {
+        t.attr.endmins += ( d - t.attr.duration );
+        t.attr.duration = d;
+        t.attr.end      = convert_to_time( t.attr.endmins, t.attr.ampm );
+    }
 
     var defaults = {
         id          : new Date().getTime(),
@@ -501,6 +528,11 @@ function rc_Event( options )
     };
 
     t.attr = $.extend( true, {}, defaults, options );
+
+    // prepare internal representation of times
+    t.set_start_time( t.attr.start );
+
+    return t;
 }
 
 
@@ -511,41 +543,25 @@ function rc_Event( options )
 //      Manages updates to/from the server
 //
 
-function rc_EventManager( retrieve_events, save_event, delete_event, resources, display )
+function rc_EventManager( retrieve_events, save_event, delete_event, insert_policy, resources, display )
 {
-    var render      = display;
-    var persistEvent= save_event;
-    var killEvent   = delete_event;
+    var render        = display;
+    var persistEvent  = save_event;
+    var killEvent     = delete_event;
+    var insert_policy = insert_policy;
+
     var t = this;
 
-    t.Events = retrieve_events();
+    t.Events = [];
+    attrs = retrieve_events();
 
-    for( var i in t.Events ) {
-        var evt = t.Events[i];
+    for( var i in attrs ) {
+        var evt = new rc_Event( attrs[i].attr );
+        t.Events[evt.attr.id] = evt;
         if( undefined != resources[evt.attr.resource] ) {
-            resources[evt.attr.resource].addEvent( evt, 'no_confirm' );
+            resources[evt.attr.resource].addEvent( evt );
             render( evt );
         }
-        else {
-            // [TODO] - remove from list??
-        }
-
-    }
-
-    t.createEvent = function( parent, resource, options ) {
-        var new_event = new rc_Event( options );
-        var id = new_event.attr.id;
-
-        t.Events[ id ] = new_event;
-
-        if( resource.addEvent( new_event ) ) {
-            new_event.attr.resource = resource.id;
-            new_event.attr.parent   = parent.attr('id');  // div in which this event currently resides
-            render( new_event );
-            persistEvent( new_event );
-        }
-
-        return new_event;
     }
 
     t.moveEvent = function( evt, parent, old_resource, new_resource, options ) {
@@ -553,9 +569,9 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
         // have to update event attributes before attempting to move the event,
         // but have to be prepared to revert them if the new resource rejects the event
 
-        var stash = evt.attr;
+        var stash = $.extend({},evt.attr);
 
-        evt.attr.start   = options.start;
+        evt.set_start_time( options.start );
         evt.attr.date    = options.date;
         evt.attr.t_offset= options.t_offset;
 
@@ -565,20 +581,66 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
         //  lazy-evaluation of boolean tests ensures 'removeEvent' happens only for inter-resource moves
         //
         if(
-            ((old_resource.attr.id == new_resource.attr.id) && new_resource.addEvent( evt ))
-            || ((old_resource.attr.id != new_resource.attr.id) && new_resource.addEvent( evt ) && old_resource.removeEvent( evt ))
+            ((old_resource.id == new_resource.id) && new_resource.addEvent( evt ))
+            || ((old_resource.id != new_resource.id) && new_resource.addEvent( evt ) && old_resource.removeEvent( evt ))
           ) {
-            // event accepted
-            evt.attr.resource = new_resource.id;
-            evt.attr.parent   = parent.attr('id');
-            render( evt );
-            persistEvent( evt );
-            return true;
+
+            // event accepted, but may yet fail the insertion-overlap criteria test
+            // unassigned event resource always accepts drop-ins
+            if( 'unassigned_event_resource' == new_resource.id 
+                || ! insert_policy( new_resource.listEvents( evt.attr.date ),
+                                 evt,
+                                 new_resource.get_open_time( evt.attr.date ),
+                                 render,
+                                 persistEvent ) ) {
+
+                evt.attr.resource = new_resource.id;
+                evt.attr.parent   = parent.attr('id');
+                render( evt );
+                persistEvent( evt );
+
+                if(isNaN(evt.attr.date)){
+                        rc_notify('Success',
+                            'Added '+evt.attr.ev_text+' to Unassigned Events list',
+                            'success');
+                }
+                else {
+                    var formatted_date = new moment( evt.attr.date ).format("dddd, Do MMM YYYY");
+                        rc_notify('Success',
+                            'Added '+evt.attr.ev_text+' to '+new_resource.attr.title+' at '+evt.attr.start+' on '+formatted_date,
+                            'success');
+                }
+
+                return false;
+
+            }
+        }
+        
+        // failed to insert into resource, or failed to fit into calendar
+        new_resource.removeEvent( evt );
+        evt.attr = $.extend({},stash);
+
+        if( "none" == evt.attr.resource ) {
+            killEvent( evt.attr.id );   // Was freshly dragged from the new events palette
         }
         else {
-            evt.attr = stash;
-            return false;
+            old_resource.addEvent( evt );
+            render( evt );          
         }
+
+        return true;
+
+    }
+
+    t.createEvent = function( parent, resource, options ) {
+        var new_event = new rc_Event( options );
+        var id = new_event.attr.id;
+
+        t.Events[ id ] = new_event;
+
+        t.moveEvent( new_event, parent, resource, resource, options )
+
+        return new_event;
     }
 
     t.deleteEvent = function( id ){
@@ -606,16 +668,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, resources, 
 //      3: live Ajax + localStorage for offline working
 
 
-//
-// [TODO] - register per-day availability times for each resource
-//      This accommodates different open/close times on different days, or
-//      worker shifts, or holiday/vacation times.
-//
-//  Implement regular hours function, and specific overrides
-//
-
-
-function rc_resource( resource_element, insert_policy ) {
+function rc_resource( resource_element, get_open_time ) {
     var t = this;
 
     //
@@ -625,7 +678,8 @@ function rc_resource( resource_element, insert_policy ) {
     t.eventpool = {};
 
     t.id   = resource_element.attr('id');
-    t.insert_policy = insert_policy;
+    t.get_open_time = get_open_time;
+
     t.attr = $.parseJSON(resource_element.attr('data-attr'));
 
     //
@@ -633,8 +687,6 @@ function rc_resource( resource_element, insert_policy ) {
     //      This test can be as complex as you like, but should at least
     //      perform basic sanity checking such as ensuring that (for example)
     //      a room can accommodate all of the attendees for a meeting
-
-    // [TODO - fix this so that Resources do not have to specify validation]
 
     t.attr.validateFn = window[resource_element.attr('data-validate')];
     t.attr.validateParams = $.parseJSON(resource_element.attr('data-params'));
@@ -660,35 +712,27 @@ function rc_resource( resource_element, insert_policy ) {
     //      true : could add the event
     //      false: unable to add the event
     //
-    t.addEvent = function( event, no_confirm ){
-        if( $.isFunction( t.attr.validateFn ) && (reason = t.attr.validateFn( event.attr, t.attr.validateParams )) ) {
+    t.addEvent = function( evt ){
+        if( $.isFunction( t.attr.validateFn ) && (reason = t.attr.validateFn( evt.attr, t.attr.validateParams )) ) {
             rc_notify('Unable to add the event','The '+reason+' requirement was not met', 'error');
             return false;
         }
         else {
 
-            if( "undefined" == typeof( t.eventpool[event.attr.date] ) ){
-                t.eventpool[event.attr.date] = [];
+            if( "undefined" == typeof( t.eventpool[evt.attr.date] ) ){
+                t.eventpool[evt.attr.date] = {};
             }
 
-            //
-            // Policy code for overlapping events, locked events
-            //
-            t.insert_policy( t.eventpool[event.attr.date], event );
-            
-            if( undefined == no_confirm ){
-                var formatted_date = new moment( event.attr.date ).format("dddd, Do MMM YYYY");
-    
-                rc_notify('Success',
-                        'Added '+event.attr.ev_text+' to '+t.attr.title+' at '+event.attr.start+' on '+formatted_date,
-                        'success');
-            }
+            t.eventpool[evt.attr.date][evt.attr.id] = evt;
         }
         return true;
     }
 
     t.removeEvent = function( evt ){
-        t.eventpool[evt.attr.date][evt.attr.id] = undefined;
+        if(    !isNaN(evt.attr.date) && "undefined" != typeof(t.eventpool[evt.attr.date]) ) {
+            delete t.eventpool[evt.attr.date][evt.attr.id];
+        }
+        return true;
     }
 
     t.listEvents = function( date ){

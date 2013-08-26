@@ -23,7 +23,7 @@
 				notice_icon: "ui-icon ui-icon-info",
 				info: "",
 				info_icon: "ui-icon ui-icon-info",
-				success: "ui-state-default",
+				success: "ui-state-success",
 				success_icon: "ui-icon ui-icon-circle-check",
 				error: "ui-state-error",
 				error_icon: "ui-icon ui-icon-alert",
