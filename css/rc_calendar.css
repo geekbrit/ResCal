@@ -101,7 +101,7 @@
   width: 100%;
   border-bottom: 1px dotted #ccc; }
 
-.rc_thirds_slot:nth-child(3n-3) {
+.rc_thirds_slot:nth-child(3n-4) {
   border-bottom: 1px solid #ccc; }
 
 .rc_halves_slot {
