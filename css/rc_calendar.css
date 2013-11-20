@@ -21,6 +21,8 @@
     bottom: 0;
     width: 100%;
     background: rgba(0, 0, 0, 0.1); }
+  .rc_day_target .rc_event {
+    position: absolute; }
 
 .rc_event {
   width: 99%;
@@ -62,6 +64,21 @@
   .rc_headerweek .rc_location {
     float: right;
     padding-right: 8px; }
+
+.rc_headerdayview {
+  width: 100%;
+  background: #dfc;
+  text-align: center; }
+
+.rc_hdr_item,
+.rc_day_row_item {
+  width: 135px;
+  float: left;
+  border-right: 1px solid #444;
+  position: relative; }
+
+.rc_hdr_item {
+  text-align: center; }
 
 .col_5dayweek {
   float: left;

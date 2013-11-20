@@ -248,6 +248,14 @@ function Calendar( element, options )
         t.options.postcalrender( t );
     }
 
+
+    t.view_day = function( date, resources )
+    // date : epoch milliseconds
+    // resources : list of resource objects associated with this calendar
+    {
+        display_day( date,  resources );
+    }
+
     t.view_week = function( date, resources )
     // date : epoch milliseconds
     // resources : list of resource objects associated with this calendar
@@ -284,7 +292,7 @@ function Calendar( element, options )
         evt.attr.t_prepad = ~~((evt.attr.prep_time / t.options.interval) * t.options.intervalpixels);
         evt.attr.t_postpad= ~~((evt.attr.cleanup_time / t.options.interval) * t.options.intervalpixels);
 
-        $('#'+evt.attr.parent).append( render_week_event(evt) );
+        $('#'+evt.attr.parent).append( render_calendar_event(evt) );
         var newev = $('#'+evt.attr.id);
 
         newev.find('.deleteevent').click(function(event){
@@ -408,6 +416,10 @@ function Calendar( element, options )
             var viewableTop = parent.position().top + adjust_scroll;
             var viewableBottom = viewableTop + parent.height() + adjust_scroll;
 
+            if( viewableTop == viewableBottom ){
+                viewableBottom = viewableTop + $(this).height() + adjust_scroll;
+            }
+
             if( pos.top  > viewableTop &&
                 pos.top  < viewableBottom &&
                 (pos.left + 20) > $(this).position().left &&
@@ -417,6 +429,36 @@ function Calendar( element, options )
         })
 
         return retval;
+    }
+
+    function display_day( date_ms, resources ) 
+    // date : epoch milliseconds
+    // resources : all resource objects
+    {
+        var date = new Date( date_ms );
+        var dcalc = new moment( date );
+        dcalc.startOf('day');
+
+        var params = {};
+            params.date_ms = dcalc.valueOf();
+            params.months  = (1+date.getMonth());
+            params.days = date.getDate();
+            params.date = t.options.days[ date.getDay() ]
+                        + " " + (1+date.getMonth())
+                        + "/" + date.getDate();
+            params.min_time = t.options.min_time;
+            params.max_time = t.options.max_time;
+            params.inc_time = t.options.interval;
+
+            params.resources = [];
+            for( i in resources ) {
+                var openclose = t.options.get_open_time( date_ms, resources[i] );
+                resources[i].opentime  = ((diffMinutes_timeOfDay( t.options.min_time, openclose[0] )/ t.options.interval) * t.options.intervalpixels);
+                resources[i].closetime = ((diffMinutes_timeOfDay( openclose[1], params.max_time )/ t.options.interval) * t.options.intervalpixels);
+                params.resources.push( resources[i] );
+            }
+
+        t.element.append( render_calendar( params ) );
     }
 
     function display_week( date, resource )
@@ -463,7 +505,7 @@ function Calendar( element, options )
             dcalc.setDate( dcalc.getDate() + 1 );
         }
 
-        t.element.append( render_week( params ) );
+        t.element.append( render_calendar( params ) );
 
         // show all known events for this resource
         for(var i = 0; i < params.col_count; i++ ) {

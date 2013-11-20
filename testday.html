@@ -1,0 +1,401 @@
+<!--
+//=============================================================================
+//  Resource Calendar Usage Example
+//  -------------------------------
+//
+//      One Calendar may have multiple resources, and events (bookings)
+//      can be freely dragged between those resources. This example shows
+//      a "calendar-day" with three resources side by side.
+//
+//      It is also be possible to show a "calendar-week" with resources
+//      in separate calendars, or a month per resource could be shown.
+//
+//      To accomplish this, different rendering templates for rendering a
+//      calendar and for rendering an event would be required, and the
+//      default "render" and "render_event" options would be overridden
+//      when instantiating the rc_calendar.
+//
+//      This file contains:
+//          * Minimal page layout code
+//          * Resource declarations with parameters that can be used for
+//            automatic sanity-checking of booking placement (for example,
+//            ensuring that a 250 person conference is not booked into a
+//            room with a 10 person capacity)
+//          * A (hidden) form that is used as the template for the popup
+//            booking-editing form when a booking is clicked
+//          * Example templates. These are embedded within <script> tags;
+//            I'd have prefered to keep them out of the html page, but
+//            alternative options have other issues (javascript "HereDoc"
+//            implementations not being cross-browser compatible & so on).
+//          * Javascript functions for validating event placement, and
+//            managing persistent storage. These would be application-
+//            specific in a real system, so I have kept them separate from
+//            the Resource Calendar javascript files.
+//          * rc_calendar instantiation example in the document ready function
+//
+//=============================================================================
+//  Author    : Peter Maloy, September 2013
+//  Repository: https://github.com/geekbrit/ResCal
+//=============================================================================
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Resource Calendar Test</title>
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/jquery.pnotify.default.css">
+    <link rel="stylesheet" type="text/css" href="css/pform.css">
+    <link rel="stylesheet" type="text/css" href="css/rc_calendar.css">
+    <link rel="stylesheet" type="text/css" href="css/test.css">
+</head>
+<body>
+    <div class='header'>
+        <h1>Resource Calendar Demo Page</h1>
+        <p>Rendering of calendars and events has been abstracted out to javascript template functions that
+           use the "doT.js" templating system [<a href='http://olado.github.io/doT/'>http://olado.github.io/doT/</a>].
+           This layout is just one possible way to use the Resource Calendar system; it is fully customizable and configurable.</p>
+        <p>Source code for the Resource Calendar jquery plugin, and a description of functionality implemented so far, can be found at: <a href="https://github.com/geekbrit/ResCal">https://github.com/geekbrit/ResCal</a></p>
+        <p>This is the <strong>Day View</strong>, follow this link for the <a href='test.html'>Week View</a></p>
+    </div>
+    <div id='new_events' class='event_palette'>
+        <p>Drag these to a calendar<br>to create a meeting</p>
+        <div class='ip_spacing'><div class='rc_event client event in_palette' data-evtype='client'   ><p>Client Meeting</p></div></div>
+        <div class='ip_spacing'><div class='rc_event internal event in_palette' data-evtype='internal' ><p>Internal Meeting</p></div></div>
+        <div class='ip_spacing'><div class='rc_event vendor event in_palette' data-evtype='vendor'   ><p>Vendor Meeting</p></div></div>
+    </div>
+
+    <div id='unassigned_event_resource' class='event_palette' data-validate ='void' data-params ='{}' data-attr ='{}';>
+        <div class='rc_day_target unassigned' id='unassigned_events' data-date='unassigned'>
+            <h2>Unassigned Events</h2>
+            <p>You can drag events here to save them until room, date, and time have been finalized.</p>
+        </div>
+    </div>
+
+    <!-- This is a container class that will hold a calendar for each of the resources defined within it -->
+    <div class='calendar'>
+        <!-- Declare resources, set up validation function and parameters-->
+        <resource id='Room1'
+                  data-validate ='validateEvent'
+                  data-params   ='{"capacity":["LE",30], "campus":["EQ","N"]}'
+                  data-attr     ='{"title":"Orca","capacity":30,"location":"Rochester North"}';
+                  >
+        </resource>
+        <resource id='Room2'
+                  data-validate ='validateEvent'
+                  data-params   ='{"capacity":["LE",50], "campus":["EQ","N"]}'
+                  data-attr     ='{"title":"Narwhal","capacity":50,"location":"Rochester North"}'
+                  >
+        </resource>
+        <resource id='Room3'
+                  data-validate ='validateEvent'
+                  data-params   ='{"capacity":["LE",120], "campus":["EQ","E"]}'
+                  data-attr     ='{"title":"Walrus","capacity":120,"location":"Rochester East"}'
+                  >
+        </resource>
+
+    </div>
+
+    <!-- This form is displayed by Pine Notify when editing Event details -->
+    <div id="form_event_edit" style="display: none;">
+        <form class="pf-form pform_custom" action="" method="post">
+            <div class='form_datepicker'></div>
+            <div class="pf-element pf-heading">
+                <h3>Resource Calendar</h3>
+                <p>Edit event details here.</p>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Meeting Title</span>
+                    <input class="pf-field" type="text" name="meeting_title" id="ev_text" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Notes</span>
+                    <input class="pf-field" type="text" name="meeting_notes" id="notes" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Number of Attendees</span>
+                    <input class="pf-field" type="text" name="meeting_capacity" id="capacity" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Campus</span>
+                    <input class="pf-field" type="text" name="meeting_caampus" id="campus" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Duration (minutes)</span>
+                    <input class="pf-field" type="text" name="meeting_duration" id="duration" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Preparation Time (minutes)</span>
+                    <input class="pf-field" type="text" name="meeting_prep" id="prep_time" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Cleanup Time (minutes)</span>
+                    <input class="pf-field" type="text" name="meeting_clean" id="cleanup_time" />
+                </label>
+            </div>
+            <div class="pf-element">
+                <label>
+                    <span class="pf-label">Lock Meeting</span>
+                    <span class="pf-label">Locked meetings can not be dragged or resized</span>
+                    <input class="pf-field" type="checkbox" name="meeting_locked" id="locked" />
+                </label>
+            </div>
+            <div class="pf-element pf-buttons pf-centered">
+                <input class="pf-button btn btn-primary" type="submit" name="submit" value="Submit" />
+            </div>
+        </form>
+    </div>
+
+<!-- TEMPLATES - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!--
+    Unlike the render_week template, this template is called once with all
+    of the resources passed in the 'it' parameter. This avoids the per-call
+    juggling that would be required to build up headings and calendar body
+    piecemeal if the resources were passed in multiple calls to this function.
+-->
+<script id='render_day' type='text/plain'>
+  <div class="rc_headerdayview clearfix">{{=it.date}}</div>
+    <div class='rc_day_slab'>
+        <div class='rc_day_header_wrapper clearfix'>
+        <div class="rc_gutter"><img src='img/CalendarIcon.gif' alt='click here to change date' class='calimg'/></div>
+        {{~ it.resources :rsrc:index}}
+            {{? rsrc.id != 'unassigned_event_resource'}}
+                <div class="rc_hdr_item">{{=rsrc.attr.title}}</div>
+            {{?}}
+        {{~}}
+        </div>
+        <div class='rc_day_row_wrapper'>
+            <div class="rc_gutter">      
+                {{var hrcount =0; var t = it.min_time; do { }}
+                  <div class='rc_hour_slot'>{{=t}}</div>
+                  {{ var r = addMinutes_timeOfDay(t,60,it.max_time); }}
+                  {{ t = r.newtime; hrcount += 1;}}
+                {{ } while(!r.over);}}
+            </div>
+            {{~ it.resources :rsrc:index}}
+            {{? rsrc.id != 'unassigned_event_resource'}}
+              <div id='{{=rsrc.id}}'>
+                  <div class="rc_day_target rc_day_row_item" id="{{= rsrc.attr.title+'_'+it.months+'_'+it.days }}" data-date="{{=it.date_ms}}">
+                  <div class="pre_day" style="height:{{=rsrc.opentime}}px"></div>
+                  <div class="post_day" style="height:{{=rsrc.closetime}}px"></div>
+                    {{ for(var j = 0; j < hrcount; j++ ) { }}
+                      {{? it.inc_time == 15 }}
+                        <div class="rc_quarters_slot"></div>
+                        <div class="rc_quarters_slot"></div>
+                        <div class="rc_quarters_slot"></div>
+                        <div class="rc_quarters_slot"></div>
+                      {{?? it.inc_time == 20 }}
+                        <div class="rc_thirds_slot"></div>
+                        <div class="rc_thirds_slot"></div>
+                        <div class="rc_thirds_slot"></div>
+                      {{?? it.inc_time == 30 }}
+                        <div class="rc_halves_slot"></div>
+                        <div class="rc_halves_slot"></div>
+                      {{?? it.inc_time == 60 }}
+                        <div class="rc_hour_slot"></div>
+                      {{??}}        
+                      {{?}}
+                    {{ } }}
+                  </div>
+              </div>
+            {{?}}
+        {{~}}
+    </div>
+</script>
+
+<script id='render_day_event' type='text/plain'>
+{{? it.attr.resource == "unassigned_event_resource"}}
+  <div class="rc_event event {{=it.attr.ev_type}}" id="{{=it.attr.id}}"
+       style="height:40px;margin:4px auto;">
+      <div class="rc_event_head">Unassigned<div class='deleteevent'>X</div></div>
+    <div class="rc_event_body">{{=it.attr.ev_text}}</div>
+   </div>
+  {{??}}
+  <div class="rc_event event {{=it.attr.ev_type}}" id="{{=it.attr.id}}"
+       style="top:{{=it.attr.t_offset}}px;height:{{=it.attr.t_height}}px;">
+      <div class="rc_event_prepad" style="height:{{=it.attr.t_prepad}}px;"></div>
+      <div class="rc_event_head">{{=it.attr.start}} - {{=it.attr.end}}<div class='deleteevent'>X</div></div>
+    <div class="rc_event_body">{{=it.attr.ev_text}}
+         {{? it.attr.locked }}<img class='lockedevent' alt='locked' src='img/padlock.png'></img>{{?}}
+      </div>
+    <div class="rc_event_postpad" style="height:{{=it.attr.t_postpad}}px;"></div>
+  </div>
+  {{?}}
+</script>
+
+<!-- END TEMPLATES - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <script src="http://code.jquery.com/jquery-1.10.2.js" type="text/javascript"></script>
+    <!-- jquery-ui down-revved because 1.10.3 has issues with dragging in scrolled pages -->
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js" type="text/javascript"></script>
+    <script src="js/jquery.pnotify.js" type="text/javascript"></script>
+    <script src="js/moment.min.js" type="text/javascript"></script>
+    <script src="js/doT.min.js" type="text/javascript"></script>
+    <script src="js/rc_utilities.js" type="text/javascript"></script>
+    <script src="templates/day.template.js" type="text/javascript"></script>
+    <script src="js/rc_calendar.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        //
+        //  Example function to verify that a resource can accept an event dropped onto it
+        //
+        function validateEvent( event, params )
+        {
+            for( var p in params ) {
+                if( p in event ) {
+                    switch( params[p][0] )
+                    {
+                        case 'EQ' : if( event[p] != params[p][1] ) return p; break;
+                        case 'NE' : if( event[p] == params[p][1] ) return p; break;
+                        case 'LT' : if( event[p] >= params[p][1] ) return p; break;
+                        case 'LE' : if( event[p] >  params[p][1] ) return p; break;
+                        case 'GT' : if( event[p] <= params[p][1] ) return p; break;
+                        case 'GE' : if( event[p] <  params[p][1] ) return p; break;
+
+                        // "IN" & "NI" would be used for testing whether a value is in a list or not
+                        case 'IN' : if( -1 == params[p][1].indexOf(event[p]) ) return p; break;
+                        case 'NI' : if( -1 != params[p][1].indexOf(event[p]) ) return p; break;
+                    }
+                }
+            }
+            return false;
+        }
+
+        //
+        // Example functions for making events persistent
+        //      This example uses HTML5 localstorage; a 'real' system would be
+        //      Ajaxed. Even better... Ajax + localstorage with localstorage change
+        //      listeners to allow offline working and sync-on-connect.
+        //
+        function saveEvent( evt )
+        {
+            localStorage.setItem( evt.attr.id, JSON.stringify(evt) );
+        }
+
+        function loadEvents( )
+        {
+            // this function should be written as a generator.. when yield is universally available
+            var records = {};
+
+            for( var i=0; i<=localStorage.length-1; i++ )
+            {
+                var key = localStorage.key(i);
+                if( isNumber(key) ){
+                    var val = JSON.parse(localStorage.getItem(key));
+                    records[key] = val ;
+                }
+            }
+
+            return records;
+        }
+
+        function removeEvent( id )
+        {
+            localStorage.removeItem( id );
+        }
+
+
+        //
+        // This function is registered as "postcalrender", a callback to be executed
+        //  after every rerender of the calendars
+        //
+        //  calendar_state gives access to the public state of the calendar
+        //
+        function adjust_calendar_width( calendar_state )
+        {
+          // expand width of containers to accommodate pesky vertical scrollbar
+          // this is specific to the template used in the test system, but the techniques used
+          // may be useful in similar templates where the calendar is scrollable
+          var first_week = $('.rc_bodyweek').first();
+          var days  = $(first_week).find('.rc_day_target');
+          var first = $(days).first();
+          var last  = $(days).last();
+          var retries = 5;
+          while( --retries && $(first).offset().top != $(last).offset().top ){
+            $('.rc_week').animate({width: "+=10px"},0);
+          }
+        }
+
+
+        //
+        // This function is needed as a callback when the user clicks on a new
+        //  date using a datepicker dialog. The callback mechanism doesn't let
+        //  us conveniently patch through to the current calendar without exposing
+        //  a lot of internals to the template system.
+        //
+        //  We can revisit this at a later date.
+        //
+        function dateSelect( date, selector )
+        {
+            $('.calendar').empty();
+            $('.calendar').rc_calendar( 'render', moment(date).valueOf() );
+            $('.calimg').click(function(){$(this).datepicker('dialog','onSelect', dateSelect)});
+        }
+
+        //
+        // This function returns the opening and closing times for any given date
+        //  and resource (resources may have different availability, but this isn't 
+        //  shown in the example). In a real system this would be a server AJAX call,
+        //  which would include a lookup for holidays, vacations and company shutdowns
+        //
+        function openTimes( date_ms, resource )
+        {
+            var times = [
+                 ['10:00','16:30'],
+                 ['09:00','18:30'],
+                 ['08:00','19:00'],
+                 ['10:00','18:00'],
+                 ['08:00','19:00'],
+                 ['08:00','20:00'],
+                 ['09:30','18:30']
+                        ];
+            var d = new Date( date_ms );
+            return times[d.getDay()];
+        }
+
+
+        $(document).ready(function() {
+            $('.calendar').rc_calendar({
+                persist         : saveEvent,
+                retrieve        : loadEvents,
+                remove          : removeEvent,
+                get_open_time   : openTimes,
+                insert_policy   : insert_shuffle_meeting,
+                render          : 'view_day',
+                render_event    : 'view_week_render_event',
+            });
+            $('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
+
+            $('.calimg').click(function(){$(this).datepicker('dialog','onSelect', dateSelect)});
+
+        });
+
+
+function manual_run(){
+            $('.calendar').rc_calendar({
+                persist         : saveEvent,
+                retrieve        : loadEvents,
+                remove          : removeEvent,
+                get_open_time   : openTimes, 
+                insert_policy   : insert_shuffle_meeting,
+                render          : 'view_day',
+                render_event    : 'view_week_render_event',
+            });
+            $('.calendar').rc_calendar( 'external_events_init', $('.in_palette') ); 
+}
+
+    </script>
+</body>
+</html>

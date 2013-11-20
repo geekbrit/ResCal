@@ -55,6 +55,7 @@
 		   use the "doT.js" templating system [<a href='http://olado.github.io/doT/'>http://olado.github.io/doT/</a>].
 		   This layout is just one possible way to use the Resource Calendar system; it is fully customizable and configurable.</p>
 		<p>Source code for the Resource Calendar jquery plugin, and a description of functionality implemented so far, can be found at: <a href="https://github.com/geekbrit/ResCal">https://github.com/geekbrit/ResCal</a></p>
+		<p>This is the <strong>Week View</strong>, follow this link for the <a href='testday.html'>Day View</a></p>
 	</div>
 	<div id='new_events' class='event_palette'>
 	    <p>Drag these to a calendar<br>to create a meeting</p>
@@ -207,7 +208,6 @@
     {{ } }}
     </div>
   </div>
-  {{ $('.calimg').click(function(){ $(this).datepicker( "dialog", {{= it.baseDate }}, dateSelect ) }); }}
 </script>
 
 <script id='render_week_event' type='text/plain'>
@@ -287,9 +287,10 @@
 			for( var i=0; i<=localStorage.length-1; i++ )
     		{
 	  			var key = localStorage.key(i);
-	  			var val = JSON.parse(localStorage.getItem(key));
-
-	  			records[key] = val ;
+	  			if( isNumber(key) ){
+		  			var val = JSON.parse(localStorage.getItem(key));
+		 			records[key] = val ;
+	  			}
 	  		}
 
 	  		return records;
@@ -335,6 +336,7 @@
 		{
 			$('.calendar').empty();
 			$('.calendar').rc_calendar( 'render', moment(date).valueOf() );
+            $('.calimg').click(function(){$(this).datepicker('dialog','onSelect', dateSelect)});
 		}
 
 		//
@@ -369,6 +371,9 @@
 				insert_policy	: insert_shuffle_meeting,
 			});
 			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
+
+            $('.calimg').click(function(){$(this).datepicker('dialog','onSelect', dateSelect)});
+
 		});
 
 

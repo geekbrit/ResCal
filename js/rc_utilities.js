@@ -119,6 +119,25 @@ function rc_event_edit( evt, callback ) {
     });
 }
 
+//
+// Compile Render Functions
+//      This function reads html text from a <script> block and passes
+//      it through the doT compiler.
+//
+function compileTemplate( id )
+{
+  var entities = [
+        ['apos', '\''],
+        ['amp', '&'],
+        ['lt', '<'],
+        ['gt', '>']
+    ];
+  var text = $('#'+id).html();
+  for (var i = 0, max = entities.length; i < max; ++i) {
+        text = text.replace(new RegExp('&'+entities[i][0]+';', 'g'), entities[i][1]);
+  }
+    return doT.template(text);
+}
 
 //
 //  insertIntoSortedList
@@ -146,6 +165,17 @@ function locationOf(element, array, start, end, sortfunc) {
   }
 }
 
+//
+//  IsNumber
+//  ========
+//      Used for filtering localstorage values. This is stopgap measure - if mixed with
+//      other localstorage key:value pairs, then the keys should be namespaced.
+//
+//      From http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
+//
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
 //
 //  date_StartOfWeek

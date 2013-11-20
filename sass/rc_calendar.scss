@@ -15,6 +15,8 @@ $week_width : 595px + $gutter_width + 2px;
 $col_5days_width : 595/5 - 1px;
 $col_7days_width : 595/7 - 1px;
 
+$day_resource_width : 135px;
+
 .clearfix:after {
 	content: ".";
 	display: block;
@@ -42,12 +44,15 @@ $col_7days_width : 595/7 - 1px;
     	width:100%;
     	background:rgba(0,0,0,0.1);
     }
+    .rc_event{
+    	position:absolute;
+    }
 }
 
 
 .rc_event {
 	width: 99%;
-	max-width:$col_5days_width;
+	max-width:$col_5days_width; 
 	height: $mins60 - 6px;
 	border:1px solid #888;
 	font-family:metrophobic,arial;
@@ -93,6 +98,25 @@ $col_7days_width : 595/7 - 1px;
 	.rc_name{float:left;padding-left:8px;}
 	.rc_location{float:right;padding-right:8px;}
 } 
+
+.rc_headerdayview {
+	width:100%; 
+	background:#dfc;
+	text-align:center;
+}
+
+
+.rc_hdr_item,
+.rc_day_row_item {
+	width:$day_resource_width;
+	float:left;
+	border-right:1px solid #444;
+	position:relative;	
+}
+
+.rc_hdr_item {
+	text-align:center;
+}
 
 .col_5dayweek {
 	float:left;
