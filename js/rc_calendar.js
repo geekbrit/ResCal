@@ -459,6 +459,17 @@ function Calendar( element, options )
             }
 
         t.element.append( render_calendar( params ) );
+
+        // show all known events for this resource
+        for(var i in resources ) {
+            var todays_events = resources[i].listEvents(dcalc.valueOf());
+
+            if( undefined != todays_events ){
+                for( var j in todays_events) {
+                    t[t.options.render_event]( todays_events[j] );
+                }
+            }
+        }
     }
 
     function display_week( date, resource )
