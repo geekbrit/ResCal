@@ -21,8 +21,6 @@
     bottom: 0;
     width: 100%;
     background: rgba(0, 0, 0, 0.1); }
-  .rc_day_target .rc_event {
-    position: absolute; }
 
 .rc_event {
   width: 99%;

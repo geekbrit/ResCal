@@ -160,7 +160,7 @@
 
 <!-- TEMPLATES - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
-<script id='render_week' type='text/plain'>
+<script id='render_week' type='text/template'>
   <div class="rc_week clearfix">
     <div class="rc_headerweek clearfix">
     <span class='rc_name'>{{=it.resource_name}}</span>
@@ -201,7 +201,7 @@
             <div class="rc_halves_slot"></div>
           {{?? it.inc_time == 60 }}
             <div class="rc_hour_slot"></div>
-          {{??}}        
+          {{??}}
           {{?}}
         {{ } }}
       </div>
@@ -210,7 +210,7 @@
   </div>
 </script>
 
-<script id='render_week_event' type='text/plain'>
+<script id='render_week_event' type='text/template'>
 {{? it.attr.resource == "unassigned_event_resource"}}
   <div class="rc_event event {{=it.attr.ev_type}}" id="{{=it.attr.id}}"
        style="height:40px;margin:4px auto;">
@@ -341,7 +341,7 @@
 
 		//
 		// This function returns the opening and closing times for any given date
-		//  and resource (resources may have different availability, but this isn't 
+		//  and resource (resources may have different availability, but this isn't
 		//  shown in the example). In a real system this would be a server AJAX call,
 		//  which would include a lookup for holidays, vacations and company shutdowns
 		//
@@ -383,10 +383,10 @@ function manual_run(){
 				retrieve 		: loadEvents,
 				remove  		: removeEvent,
 				postcalrender 	: adjust_calendar_width,
-				get_open_time   : openTimes, 
+				get_open_time   : openTimes,
 				insert_policy	: insert_shuffle_meeting,
 			});
-			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );	
+			$('.calendar').rc_calendar( 'external_events_init', $('.in_palette') );
 }
 
 	</script>

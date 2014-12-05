@@ -186,7 +186,7 @@ function Calendar( element, options )
                 // and the scrolled droppable 'virtually' overlaps droppables from another viewport.
                 // This function call ensures that the visible droppable is used
                 var target_id    = findDroppable( ui );
-                
+
                 // the other half to this problem is that this function gets called twice,
                 // once for the calendar that you dropped the event on, and once for the
                 // "shadow" calendar hidden underneath it.
@@ -199,7 +199,7 @@ function Calendar( element, options )
 
                 var time_offset = t.options.get_time_offset( ui, target );
                 var start_time  = nearest_time( time_offset );
-                var date        = new moment( parseInt(target.attr('data-date'),10) ); 
+                var date        = new moment( parseInt(target.attr('data-date'),10) );
                 var resource_id = target.parent().attr('id');
 
                 if( dragged.hasClass('in_palette') ) {
@@ -301,7 +301,7 @@ function Calendar( element, options )
             if( confirm("You are about to delete this event; this action can not be undone! Confirm deletion?") ){
                 t.eventmanager.deleteEvent( evt.attr.id );
             }
-                     
+
 
 
         });
@@ -313,7 +313,7 @@ function Calendar( element, options )
                 helper   : 'clone',
                 zIndex   : 9999,
                 drag     : function( event, ui ){
-                            
+
                             var target = findDroppable( ui );
 
                             if( target ){
@@ -431,7 +431,7 @@ function Calendar( element, options )
         return retval;
     }
 
-    function display_day( date_ms, resources ) 
+    function display_day( date_ms, resources )
     // date : epoch milliseconds
     // resources : all resource objects
     {

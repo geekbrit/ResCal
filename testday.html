@@ -165,7 +165,7 @@
     juggling that would be required to build up headings and calendar body
     piecemeal if the resources were passed in multiple calls to this function.
 -->
-<script id='render_day' type='text/plain'>
+<script id='render_day' type='text/template'>
   <div class="rc_headerdayview clearfix">{{=it.date}}</div>
     <div class='rc_day_slab'>
         <div class='rc_day_header_wrapper clearfix'>
@@ -177,7 +177,7 @@
         {{~}}
         </div>
         <div class='rc_day_row_wrapper'>
-            <div class="rc_gutter">      
+            <div class="rc_gutter">
                 {{var hrcount =0; var t = it.min_time; do { }}
                   <div class='rc_hour_slot'>{{=t}}</div>
                   {{ var r = addMinutes_timeOfDay(t,60,it.max_time); }}
@@ -205,7 +205,7 @@
                         <div class="rc_halves_slot"></div>
                       {{?? it.inc_time == 60 }}
                         <div class="rc_hour_slot"></div>
-                      {{??}}        
+                      {{??}}
                       {{?}}
                     {{ } }}
                   </div>
@@ -215,7 +215,7 @@
     </div>
 </script>
 
-<script id='render_day_event' type='text/plain'>
+<script id='render_day_event' type='text/template'>
 {{? it.attr.resource == "unassigned_event_resource"}}
   <div class="rc_event event {{=it.attr.ev_type}}" id="{{=it.attr.id}}"
        style="height:40px;margin:4px auto;">

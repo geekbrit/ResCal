@@ -3,7 +3,5 @@
 //  Repository: https://github.com/geekbrit/ResCal
 //=============================================================================
 
-var render_calendar = compileTemplate( 'render_week' );
-var render_calendar_event = compileTemplate( 'render_week_event' );
-
-
+var render_calendar = compileTemplate( 'render_day' );
+var render_calendar_event = compileTemplate( 'render_day_event' );
