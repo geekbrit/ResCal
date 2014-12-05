@@ -630,13 +630,14 @@ function rc_EventManager( retrieve_events, save_event, delete_event, insert_poli
 
 
         //
-        //  A bit of cunning code that handles inter- and intra- resource moves
-        //  lazy-evaluation of boolean tests ensures 'removeEvent' happens only for inter-resource moves
-        //
-        if(
-            ((old_resource.id == new_resource.id) && new_resource.addEvent( evt ))
-            || ((old_resource.id != new_resource.id) && new_resource.addEvent( evt ) && old_resource.removeEvent( evt ))
-          ) {
+        //  Handle inter- and intra- resource moves
+        //  Ensure 'removeEvent' happens only for
+        //  inter-resource moves and inter-day moves
+        if( new_resource.addEvent( evt ) ){
+
+            if( old_resource.id != new_resource.id || stash.date != evt.attr.date ){
+                old_resource.removeEvent( stash );
+            }
 
             // event accepted, but may yet fail the insertion-overlap criteria test
             // unassigned event resource always accepts drop-ins
@@ -668,9 +669,9 @@ function rc_EventManager( retrieve_events, save_event, delete_event, insert_poli
 
             }
         }
-        
+
         // failed to insert into resource, or failed to fit into calendar
-        new_resource.removeEvent( evt );
+        new_resource.removeEvent( evt.attr );
         evt.attr = $.extend({},stash);
 
         if( "none" == evt.attr.resource ) {
@@ -678,7 +679,7 @@ function rc_EventManager( retrieve_events, save_event, delete_event, insert_poli
         }
         else {
             old_resource.addEvent( evt );
-            render( evt );          
+            render( evt );
         }
 
         return true;
@@ -782,8 +783,8 @@ function rc_resource( resource_element, get_open_time ) {
     }
 
     t.removeEvent = function( evt ){
-        if(    !isNaN(evt.attr.date) && "undefined" != typeof(t.eventpool[evt.attr.date]) ) {
-            delete t.eventpool[evt.attr.date][evt.attr.id];
+        if(    !isNaN(evt.date) && "undefined" != typeof(t.eventpool[evt.date]) ) {
+            delete t.eventpool[evt.date][evt.id];
         }
         return true;
     }
